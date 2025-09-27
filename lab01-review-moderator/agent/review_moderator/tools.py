@@ -1,7 +1,50 @@
 from strands import tool
 import re
 import json
+import threading
+import time
 from typing import Dict, List, Any, Optional
+
+# 스레드 안전한 컨텍스트 관리
+class ImageContextManager:
+    def __init__(self):
+        self._contexts = {}
+        self._lock = threading.Lock()
+        self._cleanup_interval = 300  # 5분 후 자동 정리
+
+    def set_context(self, session_id: str, media_files: List[Dict], product_data: Dict) -> None:
+        """세션별 이미지 컨텍스트 설정"""
+        with self._lock:
+            self._contexts[session_id] = {
+                'media_files': media_files,
+                'product_data': product_data,
+                'timestamp': time.time()
+            }
+            # 오래된 컨텍스트 정리
+            self._cleanup_old_contexts()
+
+    def get_context(self, session_id: str) -> Dict:
+        """세션별 이미지 컨텍스트 조회"""
+        with self._lock:
+            return self._contexts.get(session_id, {})
+
+    def clear_context(self, session_id: str) -> None:
+        """특정 세션 컨텍스트 삭제"""
+        with self._lock:
+            self._contexts.pop(session_id, None)
+
+    def _cleanup_old_contexts(self) -> None:
+        """5분 이상 된 컨텍스트 자동 정리"""
+        current_time = time.time()
+        expired_sessions = [
+            session_id for session_id, context in self._contexts.items()
+            if current_time - context['timestamp'] > self._cleanup_interval
+        ]
+        for session_id in expired_sessions:
+            del self._contexts[session_id]
+
+# 전역 컨텍스트 매니저 인스턴스
+_context_manager = ImageContextManager()
 
 @tool
 def check_profanity(content: str) -> Dict[str, Any]:
@@ -393,3 +436,45 @@ def check_rating_consistency(rating: int, content: str) -> Dict[str, Any]:
             "rating": rating,
             "confidence": 0.0
         }
+
+def set_image_context(media_files: List[Dict], product_data: Dict, session_id: str = "default") -> None:
+    """
+    이미지 컨텍스트를 세션별로 안전하게 저장합니다.
+
+    Args:
+        media_files (List[Dict]): 업로드된 미디어 파일 정보
+        product_data (Dict): 제품 정보
+        session_id (str): 세션 식별자 (기본값: "default")
+    """
+    _context_manager.set_context(session_id, media_files, product_data)
+
+@tool
+def check_image_with_context(session_id: str = "default") -> str:
+    """
+    컨텍스트에 저장된 이미지를 검수합니다.
+
+    Args:
+        session_id (str): 세션 식별자 (기본값: "default")
+
+    Returns:
+        str: JSON 형태의 검수 결과
+    """
+    context = _context_manager.get_context(session_id)
+
+    if not context.get('media_files'):
+        return json.dumps({
+            "status": "SKIP",
+            "reason": "설정된 이미지가 없습니다.",
+            "confidence": 1.0
+        })
+
+    # 기존 check_image_product_match 로직 재사용
+    result = check_image_product_match(
+        context['media_files'],
+        context['product_data']
+    )
+
+    # Agent가 이해할 수 있는 JSON 문자열로 반환
+    return json.dumps(result)
+
+
