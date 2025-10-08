@@ -6,7 +6,7 @@ import os
 sys.path.append('.')
 
 # 이미지 경로 설정
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "images")
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")
 
 # 검수 에이전트 import 시도
 try:
