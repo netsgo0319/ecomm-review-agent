@@ -3,10 +3,10 @@ import logging
 
 from strands import Agent
 
-# Configure the root strands logger
+# Strands logger configuration
 logging.getLogger("strands").setLevel(logging.INFO)
 
-# Add a handler to see the logs
+# Log output format configuration
 logging.basicConfig(
     format="%(levelname)s | %(name)s | %(message)s", handlers=[logging.StreamHandler()]
 )

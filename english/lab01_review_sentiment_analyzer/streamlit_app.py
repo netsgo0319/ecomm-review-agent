@@ -3,7 +3,7 @@ from datetime import datetime
 import streamlit as st
 from sentiment_analyzer.agent import analyze_sentiment
 
-st.set_page_config(page_title="Lab 01. 감정 분석 Agent", page_icon="🛍️", layout="wide")
+st.set_page_config(page_title="Lab 01. Sentiment Analysis Agent", page_icon="🛍️", layout="wide")
 
 st.markdown(
     """
@@ -96,49 +96,49 @@ if "comments" not in st.session_state:
     st.session_state.comments = [
         {
             "id": 1,
-            "author": "김민수",
+            "author": "Kim Minsu",
             "rating": 5,
-            "content": "이어폰 디자인이 깔끔하고 착용감도 편해요. 음질은 가격대비 그냥저냥 괜찮은 것 같아요. 아침에 운동할 때 써봤는데 떨어지지도 않고 좋네요!",
+            "content": "The earphone design is clean and comfortable to wear. The sound quality is pretty decent for the price. I tried it during my morning workout and it didn't fall off, which is great!",
             "timestamp": "2024-01-15 14:30",
         },
         {
             "id": 2,
-            "author": "이영희",
+            "author": "Lee Younghee",
             "rating": 5,
-            "content": "제품 정말 좋아요! 음질도 훌륭하고 배터리도 오래 갑니다.",
+            "content": "The product is really good! The sound quality is excellent and the battery lasts long.",
             "timestamp": "2024-01-14 10:20",
         },
         {
             "id": 3,
-            "author": "박철수",
+            "author": "Park Cheolsu",
             "rating": 3,
-            "content": "쏘쏘. 배송은 빨라서 좋았던듯",
+            "content": "So-so. At least the delivery was fast.",
             "timestamp": "2024-01-13 16:45",
         },
         {
             "id": 4,
-            "author": "최지훈",
+            "author": "Choi Jihoon",
             "rating": 1,
-            "content": "진짜 대~~~~~박 입니다!^^ 돈을 땅에 버리고 싶은 사람이라면 꼭 사시길",
+            "content": "This is a total disaster!^^ If you want to throw your money away, please buy this!",
             "timestamp": "2024-01-12 09:15",
         },
         {
             "id": 5,
-            "author": "정수연",
+            "author": "Jung Sooyeon",
             "rating": 3,
-            "content": "생각보다 별로예요. 가성비 좋다고해서 기대했는데... 이 가격이면 다른거 사세요",
+            "content": "Not as good as I expected. I had high hopes because people said it was good value... For this price, buy something else.",
             "timestamp": "2024-01-11 16:22",
         },
     ]
 
-# 감정 분석 결과 저장용 session state
+# Session state for storing sentiment analysis results
 if "sentiment_analysis_results" not in st.session_state:
     st.session_state.sentiment_analysis_results = {}
 
 
-# 감정 분석 결과 저장 헬퍼 함수
+# Helper function to save sentiment analysis results
 def save_sentiment_result(comment_id, content, sentiment_result):
-    """감정 분석 결과를 세션 상태에 저장"""
+    """Save sentiment analysis results to session state"""
     sentiment_data = sentiment_result["sentiment_result"]
 
     result_dict = {
@@ -146,23 +146,23 @@ def save_sentiment_result(comment_id, content, sentiment_result):
         "label": sentiment_data.get("sentiment", "neutral"),
         "score": sentiment_data.get("score", 0.5),
         "confidence": sentiment_data.get("confidence", 0.5),
-        "rationale": sentiment_data.get("reason", "분석 근거 없음"),
+        "rationale": sentiment_data.get("reason", "No analysis rationale available"),
         "review_text": content,
         "raw_response": sentiment_result.get("raw_response", ""),
     }
 
     if not sentiment_result["success"]:
         result_dict["confidence"] = 0.3
-        result_dict["rationale"] = "분석 오류"
+        result_dict["rationale"] = "Analysis error"
         result_dict["error"] = sentiment_result.get("error", "")
 
     st.session_state.sentiment_analysis_results[comment_id] = result_dict
     return sentiment_result["success"]
 
 
-# 별점 HTML 생성 함수
+# Function to generate star rating HTML
 def generate_stars_html(rating):
-    """별점 HTML을 생성"""
+    """Generate star rating HTML"""
     stars = ""
     for i in range(5):
         if i < rating:
@@ -172,41 +172,41 @@ def generate_stars_html(rating):
     return stars
 
 
-# 감정 아이콘 및 색상 가져오기 함수
+# Function to get sentiment icon and color
 def get_sentiment_style(label):
-    """감정에 따른 아이콘과 색상 반환"""
-    if label in ["긍정", "positive"]:
+    """Return icon and color based on sentiment"""
+    if label in ["positive"]:
         return "😊", "#22c55e"
-    elif label in ["부정", "negative"]:
+    elif label in ["negative"]:
         return "😞", "#ef4444"
     else:
         return "😐", "#6b7280"
 
 
-# 메인 콘텐츠 영역
-st.header("🛍️ Lab 01. 리뷰 감정 분석 시스템")
-st.subheader("한국어 리뷰의 감정 분석 시스템 실습")
+# Main content area
+st.header("🛍️ Lab 01. Review Sentiment Analysis System")
+st.subheader("Hands-on Sentiment Analysis System for Reviews")
 st.markdown("---")
 
 total_reviews = len(st.session_state.comments)
 total_rating = sum([comment["rating"] for comment in st.session_state.comments])
 average_rating = total_rating / total_reviews if total_reviews else 0
 
-st.subheader("📦 상품 정보")
-# <h3 style="color:black">📦 상품 정보</h3>
+st.subheader("📦 Product Information")
+# <h3 style="color:black">📦 Product Information</h3>
 st.markdown(
     f"""
     <div class="product-rating-container">
         <div class="product-rating-grid">
             <div>
-                <p><strong>상품명:</strong> 프리미엄 무선 이어폰</p>
-                <p><strong>가격:</strong> 89,000원</p>
-                <p><strong>상품 설명:</strong></p>
-                <p>고품질 사운드와 긴 배터리 수명을 자랑하는 프리미엄 무선 이어폰입니다. 노이즈 캔슬링 기능과 편안한 착용감을 제공합니다.</p>
+                <p><strong>Product Name:</strong> Premium Wireless Earphones</p>
+                <p><strong>Price:</strong> $89.00</p>
+                <p><strong>Product Description:</strong></p>
+                <p>Premium wireless earphones featuring high-quality sound and long battery life. Provides noise cancellation functionality and comfortable fit.</p>
             </div>
             <div>
                 <div class="rating-card">
-                    <div class="metric-label"><strong>평균 평점</strong> (총 {total_reviews}개 리뷰)</div>
+                    <div class="metric-label"><strong>Average Rating</strong> ({total_reviews} total reviews)</div>
                     <div class="metric-value">{average_rating:.1f} / 5.0</div>
                 </div>
             </div>
@@ -216,7 +216,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.subheader("💬 댓글 목록")
+st.subheader("💬 Comments List")
 
 for comment in reversed(st.session_state.comments):
     with st.container():
@@ -235,9 +235,9 @@ for comment in reversed(st.session_state.comments):
             st.caption(comment["timestamp"])
 
         with col4:
-            # 이미 분석된 리뷰인지 확인
+            # Check if review has already been analyzed
             is_analyzed = comment["id"] in st.session_state.sentiment_analysis_results
-            button_text = "✅ 분석완료" if is_analyzed else "😍 감정분석"
+            button_text = "✅ Analyzed" if is_analyzed else "😍 Analyze"
             button_disabled = is_analyzed
 
             if st.button(
@@ -247,7 +247,7 @@ for comment in reversed(st.session_state.comments):
                 use_container_width=True,
                 disabled=button_disabled,
             ):
-                with st.spinner("감정 분석 중..."):
+                with st.spinner("Analyzing sentiment..."):
                     try:
                         sentiment_result = analyze_sentiment(comment["content"])
                         success = save_sentiment_result(
@@ -255,66 +255,66 @@ for comment in reversed(st.session_state.comments):
                         )
 
                         if success:
-                            st.success("✅ 분석 완료!")
+                            st.success("✅ Analysis complete!")
                         else:
                             st.warning(
-                                "⚠️ 분석 중 오류가 발생했지만 폴백 결과를 저장했습니다."
+                                "⚠️ An error occurred during analysis, but fallback result was saved."
                             )
                         st.rerun()
 
                     except Exception as e:
-                        st.error(f"감정 분석 중 오류가 발생했습니다: {str(e)}")
+                        st.error(f"Error occurred during sentiment analysis: {str(e)}")
 
-        # 감정 분석 결과가 있으면 펼치기/접기 메뉴 표시
+        # Display expandable menu if sentiment analysis results exist
         if comment["id"] in st.session_state.sentiment_analysis_results:
             sentiment_result = st.session_state.sentiment_analysis_results[
                 comment["id"]
             ]
-            label = sentiment_result.get("label", "중립")
+            label = sentiment_result.get("label", "neutral")
             score = sentiment_result.get("score", 0.5)
             confidence = sentiment_result.get("confidence", 0.5)
 
-            # 감정에 따른 아이콘과 색상
+            # Icon and color based on sentiment
             status_icon, status_color = get_sentiment_style(label)
 
             with st.expander(
-                f"{status_icon} 감정분석 결과 - {label} ({score:.3f})", expanded=False
+                f"{status_icon} Sentiment Analysis Result - {label} ({score:.3f})", expanded=False
             ):
-                # 분석 시간
-                st.write(f"**분석 시간:** {sentiment_result['timestamp']}")
+                # Analysis timestamp
+                st.write(f"**Analysis Time:** {sentiment_result['timestamp']}")
 
-                # 감정 분석 결과
+                # Sentiment analysis results
                 col1, col2 = st.columns([1, 2])
                 with col1:
                     st.markdown(
                         f"<div style='text-align: center; padding: 20px; background-color: {status_color}15; border-radius: 10px; border: 2px solid {status_color}40;'>"
                         f"<div style='font-size: 48px;'>{status_icon}</div>"
                         f"<div style='font-size: 24px; font-weight: bold; color: {status_color}; margin-top: 10px;'>{label}</div>"
-                        f"<div style='font-size: 16px; color: {status_color}; margin-top: 5px;'>점수: {score:.3f}</div>"
+                        f"<div style='font-size: 16px; color: {status_color}; margin-top: 5px;'>Score: {score:.3f}</div>"
                         f"</div>",
                         unsafe_allow_html=True,
                     )
 
                 with col2:
-                    st.write("**분석 근거:**")
-                    st.write(sentiment_result.get("rationale", "근거 없음"))
+                    st.write("**Analysis Rationale:**")
+                    st.write(sentiment_result.get("rationale", "No rationale available"))
 
-                    st.write("**신뢰도:**")
+                    st.write("**Confidence:**")
                     st.write(f"{confidence:.2f} / 1.00")
 
-                # 오류 정보 (있는 경우)
+                # Error information (if exists)
                 if "error" in sentiment_result and sentiment_result["error"]:
-                    st.error(f"분석 중 오류: {sentiment_result['error']}")
+                    st.error(f"Analysis error: {sentiment_result['error']}")
 
-                # 에이전트 디버깅 정보
+                # Agent debugging information
                 if (
                     "raw_response" in sentiment_result
                     and sentiment_result["raw_response"]
                 ):
-                    with st.expander("에이전트 디버깅 정보", expanded=False):
-                        st.write("**에이전트 원본 응답:**")
+                    with st.expander("Agent Debugging Info", expanded=False):
+                        st.write("**Agent Raw Response:**")
                         st.code(
-                            sentiment_result.get("raw_response", "응답 없음"),
+                            sentiment_result.get("raw_response", "No response available"),
                             language="text",
                         )
 
@@ -322,23 +322,23 @@ for comment in reversed(st.session_state.comments):
 
 st.markdown("---")
 
-st.subheader("✍️ 새 댓글 작성")
+st.subheader("✍️ Write New Comment")
 
 with st.form("comment_form"):
     col1, col2 = st.columns([3, 1])
 
     with col1:
-        author_name = st.text_input("작성자명", placeholder="이름을 입력하세요")
+        author_name = st.text_input("Author Name", placeholder="Enter your name")
         comment_content = st.text_area(
-            "댓글 내용", placeholder="상품에 대한 의견을 남겨주세요", height=100
+            "Comment Content", placeholder="Share your opinion about the product", height=100
         )
 
     with col2:
         rating = st.selectbox(
-            "평점", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x}점"
+            "Rating", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x} stars"
         )
 
-    submitted = st.form_submit_button("댓글 등록", type="primary")
+    submitted = st.form_submit_button("Submit Comment", type="primary")
 
     if submitted:
         if author_name and comment_content:
@@ -350,9 +350,9 @@ with st.form("comment_form"):
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
             }
             st.session_state.comments.append(new_comment)
-            st.success("댓글이 등록되었습니다!")
+            st.success("Comment has been submitted successfully!")
             st.rerun()
         else:
-            st.error("작성자명과 댓글 내용을 모두 입력해주세요.")
+            st.error("Please enter both author name and comment content.")
 
 st.markdown("---")
