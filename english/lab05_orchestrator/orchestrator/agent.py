@@ -113,7 +113,9 @@ def comprehensive_analyzer(
         result_dict = result.dict()
     else:
         result_dict = result
-
+    print("*"*10)
+    print(result_dict)
+    print("*"*10)
     return result_dict
 
 

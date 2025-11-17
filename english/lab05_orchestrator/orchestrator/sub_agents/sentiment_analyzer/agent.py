@@ -1,7 +1,7 @@
 import json
 import logging
 
-from strands import Agent
+from strands import Agent, tool
 
 # Strands logger configuration
 logging.getLogger("strands").setLevel(logging.INFO)
@@ -46,7 +46,7 @@ SYSTEM_PROMPT = """
 """
 # Create sentiment analysis Agent
 
-
+@tool
 def analyze_sentiment(review_content: str) -> dict:
     """
     Main function to analyze sentiment of review text (using Strands Agent)

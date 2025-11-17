@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from PIL.Image import Image as PILImage
 from pydantic import BaseModel, Field
-from strands import Agent
+from strands import Agent, tool
 
 from .tools import check_image_product_match, check_profanity, check_rating_consistency
 
@@ -34,6 +34,12 @@ UNIFIED_MODERATOR_PROMPT = """
     - Recognize subtle differences in emotional expressions
     - Make comprehensive judgments considering the overall context
     </Important Notes>
+
+    <overall_status Decision Rules>
+    - If profanity_check is FAIL, overall_status must be set to "FAIL"
+    - If profanity_check is PASS, overall_status is set to "PASS" even if rating_consistency or image_match is FAIL
+    - In other words, only the profanity/explicit content check determines the pass/fail of the overall moderation
+    </overall_status Decision Rules>
 
     <Output Format>
     After performing all moderation checks, respond with the following JSON schema. Do not include any other explanations or backticks (```json):
@@ -91,12 +97,12 @@ class ReviewModerationResult(BaseModel):
     overall_status: Literal["PASS", "FAIL"] = Field(description="Overall moderation pass status")
     failed_checks: List[str] = Field(description="List of failed check items")
 
-
+@tool
 def moderate_review(
     review_content: str,
     rating: int,
     product_data: Dict[str, Any],
-    image: Optional[PILImage] = None,
+    image_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Main function to comprehensively moderate a review
@@ -110,14 +116,12 @@ def moderate_review(
     Returns:
         Dict[str, Any]: Moderation result
     """
-    image_path = None
-    if image:
-        image_path = save_image(image)
 
     # Create unified moderation Agent
     unified_moderator = Agent(
         model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         tools=[check_profanity, check_rating_consistency, check_image_product_match],
+        callback_handler=None,
         system_prompt=UNIFIED_MODERATOR_PROMPT,
     )
 
@@ -127,7 +131,7 @@ def moderate_review(
         rating=rating,
         product=product_data.get("name", "Unknown"),
         category=product_data.get("category", "Unknown"),
-        has_image="Yes" if image else "No",
+        has_image="Yes" if image_path else "No",
         image_path=image_path if image_path else "None",
     )
 
@@ -138,6 +142,7 @@ def moderate_review(
     moderated_result = unified_moderator.structured_output(
         ReviewModerationResult, "Structure the model's comprehensive review moderation result."
     )
+
 
     return {
         "success": True,

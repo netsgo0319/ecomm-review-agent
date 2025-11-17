@@ -68,7 +68,7 @@ Please provide clean and calm information-based answers to customers to avoid an
 However, the tone should be polite.
 """
 
-
+@tool
 def generate_auto_response(review: str) -> Dict[str, Any]:
     """
     Main function to generate automatic response to a review

@@ -5,7 +5,7 @@ from string import Template
 from typing import List, Literal
 
 from pydantic import BaseModel, Field
-from strands import Agent
+from strands import Agent, tool
 from strands_tools import file_read
 
 # Configure the root strands logger
@@ -79,7 +79,7 @@ class KeywordAnalysisResult(BaseModel):
 
     matched_keywords: List[KeywordHighlight]
 
-
+@tool
 def search_keywords(review_text: str) -> dict:
     # Keyword matching Agent
     keyword_agent = Agent(

@@ -609,6 +609,9 @@ for comment in reversed(st.session_state.comments):
 
                 # 1-1. Profanity check
                 profanity_check = moderation_result.get("profanity_check", {})
+                print("!"*13)
+                print(profanity_check)
+                print("!"*13)
                 if profanity_check:
                     prof_status = profanity_check.get("status", "SKIP")
                     st.markdown(f"**🔍 Profanity Check:** {prof_status}")
