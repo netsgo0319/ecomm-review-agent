@@ -13,19 +13,19 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.append(str(REPO_ROOT))
 
-# 이미지 경로 설정
+# Image path configuration
 IMAGES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "images"))
 
-# 종합 분석 오케스트레이터 import 시도
+# Attempt to import comprehensive analyzer orchestrator
 try:
     from orchestrator.agent import comprehensive_analyzer
 
     AGENT_AVAILABLE = True
 except ImportError as e:
-    print(f"Comprehensive Analyzer Agent import 실패: {e}")
+    print(f"Comprehensive Analyzer Agent import failed: {e}")
     AGENT_AVAILABLE = False
 
-# 키워드 저장 파일 경로
+# Keyword storage file path
 KEYWORDS_FILE = os.path.join(
     os.path.dirname(__file__),
     "orchestrator",
@@ -36,7 +36,7 @@ KEYWORDS_FILE = os.path.join(
 
 
 def load_keywords() -> List[str]:
-    """등록된 키워드 목록 로드"""
+    """Load registered keyword list"""
     if os.path.exists(KEYWORDS_FILE):
         with open(KEYWORDS_FILE, "r", encoding="utf-8") as f:
             keywords = [line.strip() for line in f if line.strip()]
@@ -45,7 +45,7 @@ def load_keywords() -> List[str]:
 
 
 def save_keywords(keywords: List[str]):
-    """키워드 목록 저장"""
+    """Save keyword list"""
     os.makedirs(os.path.dirname(KEYWORDS_FILE), exist_ok=True)
     with open(KEYWORDS_FILE, "w", encoding="utf-8") as f:
         for keyword in keywords:
@@ -53,7 +53,7 @@ def save_keywords(keywords: List[str]):
 
 
 def register_keyword(keyword: str) -> Dict[str, Any]:
-    """새로운 키워드 등록"""
+    """Register new keyword"""
     keywords = load_keywords()
 
     if keyword in keywords:
@@ -70,7 +70,7 @@ def register_keyword(keyword: str) -> Dict[str, Any]:
 
 
 def extract_keywords_from_highlights(keyword_highlights: List[Dict]) -> List[str]:
-    """keyword_highlighted_list에서 키워드 목록 추출"""
+    """Extract keyword list from keyword_highlighted_list"""
     if not keyword_highlights:
         return []
     return [
@@ -79,7 +79,7 @@ def extract_keywords_from_highlights(keyword_highlights: List[Dict]) -> List[str
 
 
 def save_uploaded_image(uploaded_file) -> str:
-    """업로드된 이미지를 저장하고 경로 반환"""
+    """Save uploaded image and return path"""
     if uploaded_file is None:
         return None
 
@@ -95,7 +95,7 @@ def save_uploaded_image(uploaded_file) -> str:
 
 
 st.set_page_config(
-    page_title="Lab 05. 종합 리뷰 분석 Agent", page_icon="🔬", layout="wide"
+    page_title="Lab 05. Comprehensive Review Analysis Agent", page_icon="🔬", layout="wide"
 )
 
 st.markdown(
@@ -212,84 +212,84 @@ if "comments" not in st.session_state:
     st.session_state.comments = [
         {
             "id": 1,
-            "author": "김민수",
+            "author": "Kim Minsu",
             "rating": 5,
-            "content": "이 제품 정말 좋아요! 음질도 훌륭하고 배터리도 오래 갑니다.",
+            "content": "This product is really great! The sound quality is excellent and the battery lasts long.",
             "timestamp": "2024-01-15 14:30",
             "image": None,
         },
         {
             "id": 2,
-            "author": "이영희",
+            "author": "Lee Younghee",
             "rating": 1,
-            "content": "완전 쓰레기네요. 돈 아까워요.",
+            "content": "Total garbage. Waste of money.",
             "timestamp": "2024-01-14 10:20",
             "image": None,
         },
         {
             "id": 3,
-            "author": "박철수",
+            "author": "Park Chulsoo",
             "rating": 5,
-            "content": "별로예요. 기대했는데 실망이에요.",
+            "content": "Not great. I had high expectations but I'm disappointed.",
             "timestamp": "2024-01-13 16:45",
             "image": None,
         },
         {
             "id": 4,
-            "author": "최지훈",
+            "author": "Choi Jihoon",
             "rating": 4,
-            "content": "이어폰 디자인이 깔끔하고 착용감도 편해요. 음질은 가격대비 괜찮은 것 같아요. 아침에 운동할 때 써봤는데 떨어지지도 않고 좋네요!",
+            "content": "The earphone design is clean and they're comfortable to wear. The sound quality seems decent for the price. I tried them during my morning workout and they didn't fall out, which is great!",
             "timestamp": "2024-01-12 09:15",
             "image_path": os.path.join(IMAGES_DIR, "earphone.png"),
         },
         {
             "id": 5,
-            "author": "정수연",
+            "author": "Jung Sooyeon",
             "rating": 3,
-            "content": "이어폰 만만세",
+            "content": "Earphones hooray",
             "timestamp": "2024-01-11 16:22",
             "image_path": os.path.join(IMAGES_DIR, "flower.webp"),
         },
     ]
 
-# 종합 분석 결과 저장용 session state
+# Session state for storing comprehensive analysis results
 if "comprehensive_analysis_results" not in st.session_state:
     st.session_state.comprehensive_analysis_results = {}
 
-# 키워드 필터 선택 상태
+# Keyword filter selection state
 if "selected_keyword_filter" not in st.session_state:
     st.session_state.selected_keyword_filter = None
 
-# 키워드 등록 모달 상태
+# Keyword registration modal state
 if "show_keyword_modal" not in st.session_state:
     st.session_state.show_keyword_modal = False
 
-# 분석 진행 중 플래그
+# Analysis in progress flag
 if "is_analyzing" not in st.session_state:
     st.session_state.is_analyzing = False
 
-# 메인 콘텐츠 영역
-st.header("🔬 Lab 05. 종합 리뷰 분석 시스템")
-st.subheader("리뷰에 대한 종합적 분석 시스템 실습")
+# Main content area
+st.header("🔬 Lab 05. Comprehensive Review Analysis System")
+st.subheader("Comprehensive Analysis System for Reviews")
 st.markdown("---")
 
 total_reviews = len(st.session_state.comments)
 total_rating = sum([comment["rating"] for comment in st.session_state.comments])
 average_rating = total_rating / total_reviews if total_reviews else 0
 
-st.subheader("📦 상품 정보")
+st.subheader("📦 Product Information")
 st.markdown(
     f"""
     <div class="product-rating-container">
         <div class="product-rating-grid">
             <div>
-                <p><strong>상품명:</strong> 프리미엄 무선 이어폰</p>
-                <p><strong>가격:</strong> 89,000원</p>
-                <p><strong>상품 설명:</strong></p>
-                <p>고품질 사운드와 긴 배터리 수명을 자랑하는 프리미엄 무선 이어폰입니다. 노이즈 캔슬링 기능과 편안한 착용감을 제공합니다.</p>
+                <p><strong>Product Name:</strong> Premium Wireless Earphones</p>
+                <p><strong>Price:</strong> $89.00</p>
+                <p><strong>Product Description:</strong></p>
+                <p>Premium wireless earphones featuring high-quality sound and long battery life. Offers noise canceling functionality and comfortable fit.</p>
             </div>
             <div class="rating-card">
-                <div class="metric-label"><strong>평균 평점</strong> (총 {total_reviews}개 리뷰)</div>
+                <div class="metric-label"><strong>Average Rating</strong> (Total {total_reviews} reviews)</div>
                 <div class="metric-value">{average_rating:.1f} / 5.0</div>
             </div>
         </div>
@@ -300,13 +300,13 @@ st.markdown(
 
 st.markdown("---")
 
-# 키워드 관리 섹션
-st.subheader("🏷️ 키워드 관리")
+# Keyword management section
+st.subheader("🏷️ Keyword Management")
 
 col1, col2 = st.columns([4, 1])
 
 with col1:
-    st.write("**등록된 키워드 (클릭하여 필터링)**")
+    st.write("**Registered Keywords (Click to filter)**")
     registered_keywords = load_keywords()
 
     if registered_keywords:
@@ -327,47 +327,47 @@ with col1:
                         st.session_state.selected_keyword_filter = keyword
                     st.rerun()
     else:
-        st.info("⚠️ 등록된 키워드가 없습니다. 새 키워드를 등록해주세요!")
+        st.info("⚠️ No registered keywords. Please register new keywords!")
 
 with col2:
-    if st.button("➕ 새 키워드 등록", type="primary", use_container_width=True):
+    if st.button("➕ Register New Keyword", type="primary", use_container_width=True):
         st.session_state.show_keyword_modal = True
         st.rerun()
 
-# 키워드 등록 모달
+# Keyword registration modal
 if st.session_state.show_keyword_modal:
     with st.container():
         st.markdown("---")
-        st.subheader("➕ 새 키워드 등록")
+        st.subheader("➕ Register New Keyword")
 
         with st.form("keyword_form"):
-            new_keyword = st.text_input("키워드", placeholder="예: 음질")
+            new_keyword = st.text_input("Keyword", placeholder="e.g., sound quality")
 
             col1, col2 = st.columns([1, 1])
             with col1:
                 submit = st.form_submit_button(
-                    "🏷️ 등록", type="primary", use_container_width=True
+                    "🏷️ Register", type="primary", use_container_width=True
                 )
             with col2:
-                cancel = st.form_submit_button("❌ 취소", use_container_width=True)
+                cancel = st.form_submit_button("❌ Cancel", use_container_width=True)
 
             if submit:
                 if new_keyword:
                     try:
-                        with st.spinner("키워드 등록 중..."):
+                        with st.spinner("Registering keyword..."):
                             result = register_keyword(new_keyword)
                             if result.get("status") == "already_exists":
                                 st.warning(
-                                    f"⚠️ 키워드 '{new_keyword}'는 이미 등록되어 있습니다."
+                                    f"⚠️ Keyword '{new_keyword}' is already registered."
                                 )
                             else:
-                                st.success(f"✅ 키워드 '{new_keyword}' 등록 완료!")
+                                st.success(f"✅ Keyword '{new_keyword}' registered successfully!")
                                 st.session_state.show_keyword_modal = False
                                 st.rerun()
                     except Exception as e:
-                        st.error(f"❌ 키워드 등록 실패: {str(e)}")
+                        st.error(f"❌ Keyword registration failed: {str(e)}")
                 else:
-                    st.error("키워드를 입력해주세요.")
+                    st.error("Please enter a keyword.")
 
             if cancel:
                 st.session_state.show_keyword_modal = False
@@ -377,23 +377,23 @@ if st.session_state.show_keyword_modal:
 
 st.markdown("---")
 
-st.subheader("💬 리뷰 목록 및 종합 분석")
+st.subheader("💬 Review List and Comprehensive Analysis")
 
 selected_keyword = st.session_state.selected_keyword_filter
 
 for comment in reversed(st.session_state.comments):
-    # 키워드 필터링 체크
+    # Check keyword filtering
     show_comment = True
     if selected_keyword:
         if comment["id"] in st.session_state.comprehensive_analysis_results:
             result_data = st.session_state.comprehensive_analysis_results[comment["id"]]
             analysis = result_data.get("analysis_result", {})
 
-            # 검수 통과 여부 확인
+            # Check if moderation passed
             moderation_result = analysis.get("moderation_result", {})
             overall_status = moderation_result.get("overall_status", "FAIL")
 
-            # 검수 통과한 경우에만 키워드 필터링 적용
+            # Apply keyword filtering only if moderation passed
             if overall_status == "PASS":
                 keyword_highlights = analysis.get("keyword_highlighted_list", [])
                 keywords = extract_keywords_from_highlights(keyword_highlights)
@@ -411,7 +411,7 @@ for comment in reversed(st.session_state.comments):
         with col1:
             st.write(f"**{comment['author']}**")
 
-            # 리뷰 내용 하이라이트 처리
+            # Highlight review content
             highlighted_content = comment["content"]
 
             if comment["id"] in st.session_state.comprehensive_analysis_results:
@@ -420,27 +420,27 @@ for comment in reversed(st.session_state.comments):
                 ]
                 analysis = result_data.get("analysis_result", {})
 
-                # 검수 통과 여부 확인
+                # Check if moderation passed
                 moderation_result = analysis.get("moderation_result", {})
                 overall_status = moderation_result.get("overall_status", "FAIL")
 
-                # 검수 통과한 경우에만 키워드 하이라이트
+                # Highlight keywords only if moderation passed
                 if overall_status == "PASS":
                     keyword_highlights = analysis.get("keyword_highlighted_list", [])
 
-                    # 선택된 키워드와 관련된 구문만 하이라이트
+                    # Highlight only phrases related to selected keyword
                     phrases_to_highlight = []
                     for item in keyword_highlights:
                         item_keyword = item.get("keyword", "")
                         original_phrase = item.get("original_phrase", "")
 
-                        # 선택된 키워드와 일치하거나 선택 없을 때만 하이라이트
+                        # Highlight only if it matches selected keyword or no keyword selected
                         if (
                             not selected_keyword or item_keyword == selected_keyword
                         ) and original_phrase:
                             phrases_to_highlight.append(original_phrase)
 
-                    # 구문 하이라이트
+                    # Apply phrase highlighting
                     for phrase in phrases_to_highlight:
                         if phrase and phrase in highlighted_content:
                             highlighted_content = highlighted_content.replace(
@@ -450,18 +450,18 @@ for comment in reversed(st.session_state.comments):
 
             st.markdown(highlighted_content, unsafe_allow_html=True)
 
-            # 발견된 키워드 표시 (검수 통과한 경우에만)
+            # Display found keywords (only if moderation passed)
             if comment["id"] in st.session_state.comprehensive_analysis_results:
                 result_data = st.session_state.comprehensive_analysis_results[
                     comment["id"]
                 ]
                 analysis = result_data.get("analysis_result", {})
 
-                # 검수 통과 여부 확인
+                # Check if moderation passed
                 moderation_result = analysis.get("moderation_result", {})
                 overall_status = moderation_result.get("overall_status", "FAIL")
 
-                # 검수 통과한 경우에만 키워드 표시
+                # Display keywords only if moderation passed
                 if overall_status == "PASS":
                     keyword_highlights = analysis.get("keyword_highlighted_list", [])
                     keywords = extract_keywords_from_highlights(keyword_highlights)
@@ -474,21 +474,21 @@ for comment in reversed(st.session_state.comments):
                             else:
                                 keywords_html += f'<span style="background-color: #e1f5fe; color: #01579b; padding: 4px 8px; margin: 2px; border-radius: 12px; font-size: 12px; display: inline-block;">{kw}</span>'
                         st.markdown(
-                            f"**발견된 키워드:** {keywords_html}",
+                            f"**Found Keywords:** {keywords_html}",
                             unsafe_allow_html=True,
                         )
 
-            # 이미지 표시 (image 또는 image_path)
+            # Display image (image or image_path)
             image_to_display = comment.get("image") or comment.get("image_path")
             if image_to_display:
-                st.write("📷 **첨부된 이미지:**")
+                st.write("📷 **Attached Image:**")
                 try:
                     st.image(image_to_display, width=150)
                 except Exception as e:
-                    st.error(f"이미지를 불러올 수 없습니다: {e}")
+                    st.error(f"Unable to load image: {e}")
 
         with col2:
-            # 통일된 스타일의 별점 표시
+            # Display uniform style rating stars
             stars_html = ""
             for i in range(5):
                 if i < comment["rating"]:
@@ -508,7 +508,7 @@ for comment in reversed(st.session_state.comments):
 
         with col4:
             if st.button(
-                "🔬 종합분석",
+                "🔬 Analyze",
                 key=f"comprehensive_analysis_{comment['id']}",
                 type="primary",
                 use_container_width=True,
@@ -516,9 +516,9 @@ for comment in reversed(st.session_state.comments):
             ):
                 if AGENT_AVAILABLE:
                     st.session_state.is_analyzing = True
-                    with st.spinner("종합 리뷰 분석 중..."):
+                    with st.spinner("Analyzing review comprehensively..."):
                         try:
-                            # 리뷰 데이터 준비
+                            # Prepare review data
                             review_data = {
                                 "review_id": comment["id"],
                                 "content": comment["content"],
@@ -527,13 +527,13 @@ for comment in reversed(st.session_state.comments):
                                 "timestamp": comment["timestamp"],
                             }
 
-                            # 제품 데이터 준비
+                            # Prepare product data
                             product_data = {
-                                "name": "프리미엄 무선 이어폰",
-                                "category": "전자기기",
+                                "name": "Premium Wireless Earphones",
+                                "category": "Electronics",
                             }
 
-                            # 이미지 가져오기
+                            # Get image
                             pil_image = None
                             if comment.get("image"):
                                 pil_image = comment["image"]
@@ -541,14 +541,14 @@ for comment in reversed(st.session_state.comments):
                                 try:
                                     pil_image = Image.open(comment["image_path"])
                                 except Exception as e:
-                                    print(f"이미지 로드 실패: {e}")
+                                    print(f"Image load failed: {e}")
 
-                            # 종합 분석 실행
+                            # Execute comprehensive analysis
                             analysis_result = comprehensive_analyzer(
                                 product_data, review_data, pil_image
                             )
 
-                            # 결과를 session state에 저장
+                            # Save results to session state
                             st.session_state.comprehensive_analysis_results[
                                 comment["id"]
                             ] = {
@@ -566,90 +566,90 @@ for comment in reversed(st.session_state.comments):
                             import traceback
 
                             error_details = traceback.format_exc()
-                            print(f"=== 종합 분석 에러 디버깅 ===")
-                            print(f"에러 메시지: {str(e)}")
-                            print(f"상세 스택 트레이스:")
+                            print(f"=== Comprehensive Analysis Error Debug ===")
+                            print(f"Error message: {str(e)}")
+                            print(f"Detailed stack trace:")
                             print(error_details)
                             print(f"===================")
 
-                            st.error(f"종합 분석 중 오류가 발생했습니다: {str(e)}")
-                            with st.expander("상세 에러 정보"):
+                            st.error(f"An error occurred during comprehensive analysis: {str(e)}")
+                            with st.expander("Detailed Error Information"):
                                 st.code(error_details)
                 else:
-                    st.warning("종합 분석 에이전트를 사용할 수 없습니다.")
+                    st.warning("Comprehensive analysis agent is not available.")
 
-        # 종합 분석 결과가 있으면 표시
+        # Display comprehensive analysis results if available
         if comment["id"] in st.session_state.comprehensive_analysis_results:
             result_data = st.session_state.comprehensive_analysis_results[comment["id"]]
             analysis = result_data.get("analysis_result", {})
 
-            # ReviewAnalysis 구조에 따른 결과 표시
+            # Display results according to ReviewAnalysis structure
             moderation_result = analysis.get("moderation_result", {})
             overall_status = moderation_result.get("overall_status", "FAIL")
             is_approved = overall_status == "PASS"
 
-            # 검수 결과에 따른 상태 표시
+            # Display status based on moderation result
             if is_approved:
                 status_class = "status-approved"
                 status_icon = "✅"
-                status_text = "검수 통과"
+                status_text = "Moderation Passed"
             else:
                 status_class = "status-rejected"
                 status_icon = "❌"
-                status_text = "검수 실패"
+                status_text = "Moderation Failed"
 
             with st.expander(
-                f"{status_icon} 종합 분석 결과 - {status_text}", expanded=True
+                f"{status_icon} Comprehensive Analysis Results - {status_text}", expanded=True
             ):
-                # 분석 시간
-                st.write(f"**분석 시간:** {result_data['timestamp']}")
+                # Analysis timestamp
+                st.write(f"**Analysis Time:** {result_data['timestamp']}")
 
-                # 1. 검수 결과
-                st.markdown("### 1️⃣ 리뷰 검수 결과")
+                # 1. Moderation results
+                st.markdown("### 1️⃣ Review Moderation Results")
 
-                # 1-1. 욕설/비속어 검사
+                # 1-1. Profanity check
                 profanity_check = moderation_result.get("profanity_check", {})
                 if profanity_check:
                     prof_status = profanity_check.get("status", "SKIP")
-                    st.markdown(f"**🔍 욕설/비속어 검사:** {prof_status}")
-                    st.markdown(f"**사유:** {profanity_check.get('reason', '-')}")
+                    st.markdown(f"**🔍 Profanity Check:** {prof_status}")
+                    st.markdown(f"**Reason:** {profanity_check.get('reason', '-')}")
                     st.markdown(
-                        f"**신뢰도:** {profanity_check.get('confidence', 0):.2f}"
+                        f"**Confidence:** {profanity_check.get('confidence', 0):.2f}"
                     )
                     st.markdown("---")
 
-                # 1-2. 별점-내용 일치성 검사
+                # 1-2. Rating-content consistency check
                 rating_check = moderation_result.get("rating_consistency", {})
                 if rating_check:
                     rating_status = rating_check.get("status", "SKIP")
-                    st.markdown(f"**⭐ 별점-내용 일치성:** {rating_status}")
-                    st.markdown(f"**사유:** {rating_check.get('reason', '-')}")
-                    st.markdown(f"**신뢰도:** {rating_check.get('confidence', 0):.2f}")
+                    st.markdown(f"**⭐ Rating-Content Consistency:** {rating_status}")
+                    st.markdown(f"**Reason:** {rating_check.get('reason', '-')}")
+                    st.markdown(f"**Confidence:** {rating_check.get('confidence', 0):.2f}")
                     st.markdown("---")
 
-                # 1-3. 이미지 매칭 검사
+                # 1-3. Image matching check
                 image_check = moderation_result.get("image_match", {})
                 if image_check:
                     image_status = image_check.get("status", "SKIP")
-                    st.markdown(f"**📷 이미지 매칭:** {image_status}")
-                    st.markdown(f"**사유:** {image_check.get('reason', '-')}")
-                    st.markdown(f"**신뢰도:** {image_check.get('confidence', 0):.2f}")
+                    st.markdown(f"**📷 Image Matching:** {image_status}")
+                    st.markdown(f"**Reason:** {image_check.get('reason', '-')}")
+                    st.markdown(f"**Confidence:** {image_check.get('confidence', 0):.2f}")
                     st.markdown("---")
 
-                # 전체 검수 결과
-                st.markdown(f"**📋 전체 검수 결과:** {status_text} ({overall_status})")
+                # Overall moderation result
+                st.markdown(f"**📋 Overall Moderation Result:** {status_text} ({overall_status})")
                 failed_checks = moderation_result.get("failed_checks", [])
                 if failed_checks:
-                    st.markdown(f"**실패 항목:** {', '.join(failed_checks)}")
+                    st.markdown(f"**Failed Items:** {', '.join(failed_checks)}")
 
-                # 검수 실패 시 이후 단계 생략
+                # Skip subsequent steps if moderation failed
                 if not is_approved:
                     st.warning(
-                        "⚠️ 리뷰가 검수를 통과하지 못하여 이후 분석 단계가 생략되었습니다."
+                        "⚠️ The review did not pass moderation, so subsequent analysis steps were skipped."
                     )
                 else:
-                    # 2. 키워드 분석 결과
-                    st.markdown("### 2️⃣ 키워드 분석 결과")
+                    # 2. Keyword analysis results
+                    st.markdown("### 2️⃣ Keyword Analysis Results")
                     keyword_highlights = analysis.get("keyword_highlighted_list", [])
 
                     if keyword_highlights:
@@ -658,40 +658,40 @@ for comment in reversed(st.session_state.comments):
                             match_type = highlight.get("match_type", "")
                             original_phrase = highlight.get("original_phrase", "")
 
-                            st.markdown(f"**키워드:** `{keyword}` ({match_type} 매칭)")
-                            st.markdown("**관련 문장:**")
+                            st.markdown(f"**Keyword:** `{keyword}` ({match_type} match)")
+                            st.markdown("**Related Sentence:**")
                             st.markdown(f"• {original_phrase}")
                     else:
-                        st.info("추출된 키워드가 없습니다.")
+                        st.info("No keywords extracted.")
 
-                    # 3. 감정 분석 결과
-                    st.markdown("### 3️⃣ 감정 분석 결과")
-                    sentiment = analysis.get("sentiment", "정보 없음")
+                    # 3. Sentiment analysis results
+                    st.markdown("### 3️⃣ Sentiment Analysis Results")
+                    sentiment = analysis.get("sentiment", "No information")
 
-                    # 감정에 따른 색상 및 아이콘
-                    if "positive" in sentiment.lower() or "긍정" in sentiment:
+                    # Color and icon based on sentiment
+                    if "positive" in sentiment.lower():
                         sentiment_color = "#22c55e"
                         sentiment_icon = "😊"
-                        sentiment_text = "긍정"
-                    elif "negative" in sentiment.lower() or "부정" in sentiment:
+                        sentiment_text = "Positive"
+                    elif "negative" in sentiment.lower():
                         sentiment_color = "#ef4444"
                         sentiment_icon = "😞"
-                        sentiment_text = "부정"
+                        sentiment_text = "Negative"
                     else:
                         sentiment_color = "#6b7280"
                         sentiment_icon = "😐"
-                        sentiment_text = "중립"
+                        sentiment_text = "Neutral"
 
                     st.markdown(
-                        f"{sentiment_icon} **감정:** {sentiment_text} ({sentiment})"
+                        f"{sentiment_icon} **Sentiment:** {sentiment_text} ({sentiment})"
                     )
 
-                    # 4. 자동 응답 결과
-                    st.markdown("### 4️⃣ 자동 응답")
-                    auto_response = analysis.get("auto_response", "응답 생성 정보 없음")
+                    # 4. Auto-response results
+                    st.markdown("### 4️⃣ Auto Response")
+                    auto_response = analysis.get("auto_response", "No response generated")
 
-                    st.markdown("**💬 생성된 셀러 응답:**")
-                    # 자동 응답을 박스로 표시
+                    st.markdown("**💬 Generated Seller Response:**")
+                    # Display auto-response in a box
                     response_html = auto_response.replace("\n", "<br>")
                     st.markdown(
                         f'<div style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 20px; border-radius: 12px; border: 2px solid #3b82f6; margin-top: 10px; line-height: 1.6;">{response_html}</div>',
@@ -702,39 +702,39 @@ for comment in reversed(st.session_state.comments):
 
 st.markdown("---")
 
-st.subheader("✍️ 새 리뷰 작성")
+st.subheader("✍️ Write New Review")
 
 with st.form("comment_form"):
     col1, col2 = st.columns([3, 1])
 
     with col1:
-        author_name = st.text_input("작성자명", placeholder="이름을 입력하세요")
+        author_name = st.text_input("Author Name", placeholder="Enter your name")
         comment_content = st.text_area(
-            "리뷰 내용", placeholder="상품에 대한 의견을 남겨주세요", height=100
+            "Review Content", placeholder="Share your opinion about the product", height=100
         )
 
         uploaded_image = st.file_uploader(
-            "이미지 첨부 (선택사항)",
+            "Attach Image (Optional)",
             type=["png", "jpg", "jpeg"],
             accept_multiple_files=False,
         )
 
     with col2:
         rating = st.selectbox(
-            "평점", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x}점"
+            "Rating", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x} stars"
         )
 
-    submitted = st.form_submit_button("리뷰 등록", type="primary")
+    submitted = st.form_submit_button("Submit Review", type="primary")
 
     if submitted:
         if author_name and comment_content:
-            # 이미지 처리
+            # Process image
             pil_image = None
             if uploaded_image:
                 try:
                     pil_image = Image.open(uploaded_image)
                 except Exception as e:
-                    st.error(f"이미지 처리 중 오류가 발생했습니다: {e}")
+                    st.error(f"An error occurred while processing the image: {e}")
                     st.stop()
 
             new_comment = {
@@ -746,13 +746,13 @@ with st.form("comment_form"):
                 "image": pil_image,
             }
             st.session_state.comments.append(new_comment)
-            st.success("리뷰가 등록되었습니다!")
+            st.success("Review submitted successfully!")
 
-            # 자동 종합 분석 수행 (AGENT_AVAILABLE인 경우)
+            # Perform automatic comprehensive analysis (if AGENT_AVAILABLE)
             if AGENT_AVAILABLE:
-                with st.spinner("새 리뷰 자동 종합 분석 중..."):
+                with st.spinner("Automatically analyzing new review..."):
                     try:
-                        # 리뷰 데이터 준비
+                        # Prepare review data
                         review_data = {
                             "review_id": new_comment["id"],
                             "content": comment_content,
@@ -761,16 +761,16 @@ with st.form("comment_form"):
                             "timestamp": new_comment["timestamp"],
                         }
                         product_data = {
-                            "name": "프리미엄 무선 이어폰",
-                            "category": "전자기기",
+                            "name": "Premium Wireless Earphones",
+                            "category": "Electronics",
                         }
 
-                        # 종합 분석 실행
+                        # Execute comprehensive analysis
                         analysis_result = comprehensive_analyzer(
                             product_data, review_data, pil_image
                         )
 
-                        # 결과를 session state에 저장
+                        # Save results to session state
                         st.session_state.comprehensive_analysis_results[
                             new_comment["id"]
                         ] = {
@@ -779,13 +779,13 @@ with st.form("comment_form"):
                             "review_data": review_data,
                         }
 
-                        st.success("자동 종합 분석이 완료되었습니다!")
+                        st.success("Automatic comprehensive analysis completed!")
 
                     except Exception as e:
-                        st.error(f"자동 종합 분석 중 오류가 발생했습니다: {str(e)}")
+                        st.error(f"An error occurred during automatic comprehensive analysis: {str(e)}")
 
             st.rerun()
         else:
-            st.error("작성자명과 리뷰 내용을 모두 입력해주세요.")
+            st.error("Please enter both author name and review content.")
 
 st.markdown("---")
