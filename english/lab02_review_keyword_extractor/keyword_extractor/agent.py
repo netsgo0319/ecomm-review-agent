@@ -18,84 +18,84 @@ logging.basicConfig(
 
 
 SYSTEM_PROMPT = """
-당신은 키워드 기반 리뷰 분석 전문가입니다.
+You are a keyword-based review analysis expert.
 
-<핵심작업>
-- 리뷰 텍스트에서 한국어 특성과 문맥을 고려해 키워드와 관련된 문장을 정확하게 추출해주세요
-- 등록된 키워드와의 정밀한 매칭을 수행해주세요
-</핵심작업>
+<Core Tasks>
+- Accurately extract sentences related to keywords from review text, considering language characteristics and context
+- Perform precise matching with registered keywords
+</Core Tasks>
 
-<작업프로세스>
-1. 등록된 키워드 조회: file_read 도구를 사용하여 "lab02_review_keyword_extractor/registered_keywords.txt" 파일을 읽고 등록된 키워드 목록을 획득해주세요
-2. 리뷰 텍스트 분석: 등록된 키워드를 참고하여 리뷰에서 관련 키워드와 구문을 식별해주세요
-3. 매칭 수행:
-   - 완전 일치를 우선해주세요
-   - 부분 일치 및 유사어를 고려해주세요
-   - 의미론적 유사어를 고려해주세요
-</작업프로세스>
+<Work Process>
+1. Retrieve registered keywords: Use the file_read tool to read the "lab02_review_keyword_extractor/registered_keywords.txt" file and obtain the list of registered keywords
+2. Analyze review text: Identify related keywords and phrases in the review by referring to the registered keywords
+3. Perform matching:
+   - Prioritize exact matches
+   - Consider partial matches and similar words
+   - Consider semantic similarities
+</Work Process>
 
-<출력형식>
-결과에 다음값을 포함해주세요. :
+<Output Format>
+Include the following values in the result:
 {
   "matched_keywords": [
         {
-            "keyword": "매칭된 키워드",
+            "keyword": "matched keyword",
             "match_type": "exact|partial|semantic",
-            "original_phrase": "리뷰에서 발견된 원본 구문 (리뷰 텍스트에서 그대로 추출한 문장 또는 구문)"
+            "original_phrase": "original phrase found in review (sentence or phrase extracted directly from the review text)"
         }
     ]
 }
 
-주의: original_phrase는 반드시 리뷰 원문에 포함된 정확한 텍스트여야 합니다.
-</출력형식>
+Note: original_phrase must be the exact text included in the original review.
+</Output Format>
 
-<주의사항>
-- 한국어 특성 (조사, 어미 변화)을 고려하여 매칭해주세요
-- 부정문에서 사용된 키워드도 포함하되 구분하여 처리해주세요
-- 중복 키워드는 제거하고 최적의 매칭만 유지해주세요
-</주의사항>
+<Important Notes>
+- Match considering language characteristics (particles, ending variations)
+- Include keywords used in negative sentences, but distinguish and process them
+- Remove duplicate keywords and keep only the best matches
+</Important Notes>
 """
 
 KEYWORD_EXTRACTOR_PROMPT_TEMPLATE = Template(
     """
-아래 리뷰에서 등록된 키워드와 매칭되는 내용을 찾아주세요.
-<리뷰>
+Please find content that matches the registered keywords in the review below.
+<Review>
     $review_text
-</리뷰>
+</Review>
 """
 )
 
 
 class KeywordHighlight(BaseModel):
-    """키워드별 매칭되는 문장리스트 데이터셋"""
+    """Dataset of matching sentences for each keyword"""
 
-    keyword: str = Field(description="기준 키워드")
+    keyword: str = Field(description="Reference keyword")
     match_type: Literal["exact", "partial", "semantic"]
-    original_phrase: str = Field(description="리뷰에서 발견된 원본 구문")
+    original_phrase: str = Field(description="Original phrase found in review")
 
 
 class KeywordAnalysisResult(BaseModel):
-    """키워드 분석 결과를 담는 클래스"""
+    """Class containing keyword analysis results"""
 
     matched_keywords: List[KeywordHighlight]
 
 
 def search_keywords(review_text: str) -> dict:
-    # 키워드 매칭 Agent
+    # Keyword matching Agent
     keyword_agent = Agent(
         model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         tools=[file_read],
         system_prompt=SYSTEM_PROMPT,
     )
 
-    # Agent 실행
+    # Execute Agent
     prompt = KEYWORD_EXTRACTOR_PROMPT_TEMPLATE.substitute(review_text=review_text)
     agent_response = keyword_agent(prompt)
     str_response = str(agent_response)
 
-    # Structured output 으로 출력
+    # Output as structured output
     result = keyword_agent.structured_output(
-        KeywordAnalysisResult, "키워드 분석 결과를 구조화된 형태로 추출하시오"
+        KeywordAnalysisResult, "Extract keyword analysis results in structured form"
     )
 
     return {

@@ -6,14 +6,14 @@ from typing import Any, Dict, List
 import streamlit as st
 from keyword_extractor.agent import search_keywords
 
-# 키워드 저장 파일 경로
+# Keyword storage file path
 KEYWORDS_FILE = os.path.join(
     os.path.dirname(__file__), "keyword_extractor", "registered_keywords.txt"
 )
 
 
 def load_keywords() -> List[str]:
-    """등록된 키워드 목록 로드"""
+    """Load registered keyword list"""
     if os.path.exists(KEYWORDS_FILE):
         with open(KEYWORDS_FILE, "r", encoding="utf-8") as f:
             keywords = [line.strip() for line in f if line.strip()]
@@ -22,18 +22,18 @@ def load_keywords() -> List[str]:
 
 
 def save_keywords(keywords: List[str]):
-    """키워드 목록 저장"""
+    """Save keyword list"""
     with open(KEYWORDS_FILE, "w", encoding="utf-8") as f:
         for keyword in keywords:
             f.write(f"{keyword}\n")
 
 
 def register_keyword(keyword: str) -> Dict[str, Any]:
-    """새로운 키워드 등록"""
-    # 기존 키워드 로드
+    """Register new keyword"""
+    # Load existing keywords
     keywords = load_keywords()
 
-    # 중복 체크
+    # Check for duplicates
     if keyword in keywords:
         return {
             "status": "already_exists",
@@ -41,18 +41,18 @@ def register_keyword(keyword: str) -> Dict[str, Any]:
             "total_keywords": len(keywords),
         }
 
-    # 새 키워드 추가
+    # Add new keyword
     keywords.append(keyword)
 
-    # 저장
+    # Save
     save_keywords(keywords)
 
     return {"status": "registered", "keyword": keyword, "total_keywords": len(keywords)}
 
 
-# 키워드 추출 헬퍼 함수
+# Keyword extraction helper function
 def extract_keywords_from_result(match_result: Dict[str, Any]) -> List[str]:
-    """매칭 결과에서 키워드 목록을 추출"""
+    """Extract keyword list from matching result"""
     if not match_result.get("success"):
         return []
 
@@ -62,17 +62,17 @@ def extract_keywords_from_result(match_result: Dict[str, Any]) -> List[str]:
     if not matched_keywords:
         return []
 
-    # 새로운 형식: 딕셔너리 배열
+    # New format: dictionary array
     if isinstance(matched_keywords[0], dict):
         return [
             item.get("keyword", "") for item in matched_keywords if item.get("keyword")
         ]
-    # 기존 형식: 문자열 배열
+    # Old format: string array
     else:
         return matched_keywords
 
 
-st.set_page_config(page_title="Lab 02. 키워드 검색 Agent", page_icon="🏷️", layout="wide")
+st.set_page_config(page_title="Lab 02. Keyword Search Agent", page_icon="🏷️", layout="wide")
 
 st.markdown(
     """
@@ -147,7 +147,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 세션 상태 초기화
+# Initialize session state
 if "keyword_matching_results" not in st.session_state:
     st.session_state.keyword_matching_results = {}
 
@@ -158,67 +158,67 @@ if "comments" not in st.session_state:
     st.session_state.comments = [
         {
             "id": 1,
-            "author": "박지훈",
+            "author": "Park Jihoon",
             "rating": 5,
-            "content": "전반적으로 낫배드. 가격 대비 쓸만한 것 같습니다.",
+            "content": "Overall not bad. Seems usable for the price.",
             "timestamp": "2024-01-16 17:32",
         },
         {
             "id": 2,
-            "author": "김민수",
+            "author": "Kim Minsu",
             "rating": 5,
-            "content": "주문한지 하루만에 왔어요! 급했는데 빠른 배송 감사합니다. ",
+            "content": "It arrived just one day after ordering! I was in a hurry, so thank you for the fast delivery.",
             "timestamp": "2024-01-15 14:30",
         },
         {
             "id": 3,
-            "author": "이영희",
+            "author": "Lee Younghee",
             "rating": 4,
-            "content": "디자인이 제일 맘에 들어요, 하얀색 강추입니다! 근데 제가 귀가 작아서그런지 귀에 끼면 좀 아파요",
+            "content": "I like the design the most, highly recommend white! But it hurts my ears a bit when I wear it, maybe because I have small ears.",
             "timestamp": "2024-01-14 16:45",
         },
         {
             "id": 4,
-            "author": "박철수",
+            "author": "Park Cheolsu",
             "rating": 3,
-            "content": "며칠 더 써봐야겠지만, 지금까지는 음질도 배터리도 만족스럽습니다.",
+            "content": "I need to use it for a few more days, but so far both the sound quality and battery are satisfactory.",
             "timestamp": "2024-01-13 10:20",
         },
         {
             "id": 5,
-            "author": "최지영",
+            "author": "Choi Jiyoung",
             "rating": 5,
-            "content": "제품 맘에 듭니다. 특히 통화할 때 음성이 깔끔하게 들려서 만족스러워요. 배터리도 오래 갑니다.",
+            "content": "I like the product. Especially when making calls, the voice comes through clearly, which is satisfying. The battery also lasts long.",
             "timestamp": "2024-01-12 09:15",
         },
     ]
 
-# 메인 콘텐츠 영역
-st.header("🏷️ Lab 02. 키워드 검색 시스템")
-st.subheader("한국어 리뷰에서 키워드 검색 및 매칭 시스템 실습")
+# Main content area
+st.header("🏷️ Lab 02. Keyword Search System")
+st.subheader("Hands-on Keyword Search and Matching System for Reviews")
 st.markdown("---")
 
-# 제품 정보 및 평점 계산
+# Product information and rating calculation
 total_reviews = len(st.session_state.comments)
 total_rating = sum([comment["rating"] for comment in st.session_state.comments])
 average_rating = total_rating / total_reviews if total_reviews else 0
 
-# 제품 정보 섹션 (최상단 이동)
-st.subheader("📦 상품 정보")
-# <h3 style="color:black">📦 상품 정보</h3>
+# Product information section (moved to top)
+st.subheader("📦 Product Information")
+# <h3 style="color:black">📦 Product Information</h3>
 st.markdown(
     f"""
     <div class="product-rating-container">
         <div class="product-rating-grid">
             <div>
-                <h3 style="color:black">📦 상품 정보</h3>
-                <p><strong>상품명:</strong> 프리미엄 무선 이어폰</p>
-                <p><strong>가격:</strong> 89,000원</p>
-                <p><strong>상품 설명:</strong></p>
-                <p>고품질 사운드와 긴 배터리 수명을 자랑하는 프리미엄 무선 이어폰입니다. 노이즈 캔슬링 기능과 편안한 착용감을 제공합니다.</p>
+                <h3 style="color:black">📦 Product Information</h3>
+                <p><strong>Product Name:</strong> Premium Wireless Earphones</p>
+                <p><strong>Price:</strong> $89.00</p>
+                <p><strong>Product Description:</strong></p>
+                <p>Premium wireless earphones featuring high-quality sound and long battery life. Provides noise cancellation functionality and comfortable fit.</p>
             </div>
             <div class="rating-card">
-                <div class="metric-label"><strong>평균 평점</strong> (총 {total_reviews}개 리뷰)</div>
+                <div class="metric-label"><strong>Average Rating</strong> ({total_reviews} total reviews)</div>
                 <div class="metric-value">{average_rating:.1f} / 5.0</div>
             </div>
         </div>
@@ -227,22 +227,22 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 키워드 관리 섹션
-st.subheader("🏷️ 키워드 관리")
+# Keyword management section
+st.subheader("🏷️ Keyword Management")
 
-# 등록된 키워드 표시 및 새 키워드 등록 버튼
+# Display registered keywords and new keyword registration button
 col1, col2 = st.columns([4, 1])
 
 with col1:
-    st.write("**등록된 키워드 (클릭하여 필터링)**")
+    st.write("**Registered Keywords (Click to filter)**")
     registered_keywords = load_keywords()
 
-    # 선택된 키워드 세션 상태 초기화
+    # Initialize selected keyword session state
     if "selected_keyword_filter" not in st.session_state:
         st.session_state["selected_keyword_filter"] = None
 
     if registered_keywords:
-        # 키워드를 버튼으로 표시 (한 줄에 여러 개)
+        # Display keywords as buttons (multiple per row)
         cols = st.columns(min(8, len(registered_keywords)))
         for idx, keyword in enumerate(registered_keywords):
             with cols[idx % len(cols)]:
@@ -254,54 +254,54 @@ with col1:
                     type=button_type,
                     use_container_width=True,
                 ):
-                    # 토글 동작: 같은 키워드 클릭하면 선택 해제, 다른 키워드 클릭하면 선택
+                    # Toggle action: deselect if same keyword clicked, select if different keyword clicked
                     if st.session_state["selected_keyword_filter"] == keyword:
                         st.session_state["selected_keyword_filter"] = None
                     else:
                         st.session_state["selected_keyword_filter"] = keyword
                     st.rerun()
     else:
-        st.info("⚠️ 등록된 키워드가 없습니다. 새 키워드를 등록해주세요!")
+        st.info("⚠️ No registered keywords. Please register a new keyword!")
 
 with col2:
-    if st.button("➕ 새 키워드 등록", type="primary", use_container_width=True):
+    if st.button("➕ Register New Keyword", type="primary", use_container_width=True):
         st.session_state["show_keyword_modal"] = True
         st.rerun()
 
-# 키워드 등록 모달 (팝업)
+# Keyword registration modal (popup)
 if st.session_state.get("show_keyword_modal", False):
     with st.container():
         st.markdown("---")
-        st.subheader("➕ 새 키워드 등록")
+        st.subheader("➕ Register New Keyword")
 
         with st.form("keyword_form"):
-            new_keyword = st.text_input("키워드", placeholder="예: 음질")
+            new_keyword = st.text_input("Keyword", placeholder="e.g., sound quality")
 
             col1, col2 = st.columns([1, 1])
             with col1:
                 submit = st.form_submit_button(
-                    "🏷️ 등록", type="primary", use_container_width=True
+                    "🏷️ Register", type="primary", use_container_width=True
                 )
             with col2:
-                cancel = st.form_submit_button("❌ 취소", use_container_width=True)
+                cancel = st.form_submit_button("❌ Cancel", use_container_width=True)
 
             if submit:
                 if new_keyword:
                     try:
-                        with st.spinner("키워드 등록 중..."):
+                        with st.spinner("Registering keyword..."):
                             result = register_keyword(new_keyword)
                             if result.get("status") == "already_exists":
                                 st.warning(
-                                    f"⚠️ 키워드 '{new_keyword}'는 이미 등록되어 있습니다."
+                                    f"⚠️ Keyword '{new_keyword}' is already registered."
                                 )
                             else:
-                                st.success(f"✅ 키워드 '{new_keyword}' 등록 완료!")
+                                st.success(f"✅ Keyword '{new_keyword}' registered successfully!")
                                 st.session_state["show_keyword_modal"] = False
                                 st.rerun()
                     except Exception as e:
-                        st.error(f"❌ 키워드 등록 실패: {str(e)}")
+                        st.error(f"❌ Keyword registration failed: {str(e)}")
                 else:
-                    st.error("키워드를 입력해주세요.")
+                    st.error("Please enter a keyword.")
 
             if cancel:
                 st.session_state["show_keyword_modal"] = False
@@ -311,17 +311,17 @@ if st.session_state.get("show_keyword_modal", False):
 
 st.divider()
 
-# 리뷰 섹션
-st.subheader("📝 고객 리뷰")
+# Review section
+st.subheader("📝 Customer Reviews")
 
-# 선택된 키워드 필터 가져오기
+# Get selected keyword filter
 selected_keyword = st.session_state.get("selected_keyword_filter", None)
 
 for comment in reversed(st.session_state.comments):
-    # 필터링 체크
+    # Check filtering
     show_comment = True
-    if selected_keyword:  # 키워드가 선택된 경우에만 필터링
-        # 선택된 키워드가 있을 때만 필터링
+    if selected_keyword:  # Filter only when a keyword is selected
+        # Filter only when a keyword is selected
         if comment["id"] in st.session_state.keyword_matching_results:
             result = st.session_state.keyword_matching_results[comment["id"]]
             match_result = result.get("match_result", {})
@@ -332,7 +332,7 @@ for comment in reversed(st.session_state.comments):
 
     if show_comment:
         with st.container():
-            # 리뷰 내용 하이라이트 처리
+            # Highlight review content
             highlighted_content = comment["content"]
 
             if comment["id"] in st.session_state.keyword_matching_results:
@@ -342,37 +342,37 @@ for comment in reversed(st.session_state.comments):
                 if match_result.get("success"):
                     analysis_result = match_result.get("analysis_result", {})
 
-                    # 선택된 키워드와 관련된 구문만 하이라이트
+                    # Highlight only phrases related to selected keyword
                     matched_keywords = analysis_result.get("matched_keywords", [])
                     phrases_to_highlight = []
 
                     if matched_keywords:
-                        # 새로운 형식: 딕셔너리 배열
+                        # New format: dictionary array
                         if isinstance(matched_keywords[0], dict):
                             for item in matched_keywords:
                                 item_keyword = item.get("keyword", "")
                                 original_phrase = item.get("original_phrase", "")
 
-                                # 선택된 키워드와 일치하거나 선택 없을 때만 하이라이트
+                                # Highlight only when matching selected keyword or no selection
                                 if (
                                     not selected_keyword
                                     or item_keyword == selected_keyword
                                 ) and original_phrase:
                                     phrases_to_highlight.append(original_phrase)
-                        # 기존 형식: 문자열 배열 - matched_phrases 사용
+                        # Old format: string array - use matched_phrases
                         else:
                             if not selected_keyword:
                                 phrases_to_highlight = analysis_result.get(
                                     "matched_phrases", []
                                 )
                             else:
-                                # 특정 키워드 선택 시, 해당 키워드의 구문만 추출
+                                # When specific keyword selected, extract only that keyword's phrases
                                 all_phrases = analysis_result.get("matched_phrases", [])
                                 phrases_to_highlight = (
-                                    all_phrases  # 기존 형식에서는 전체 구문 사용
+                                    all_phrases  # Use all phrases in old format
                                 )
 
-                    # 구문 하이라이트
+                    # Highlight phrases
                     for phrase in phrases_to_highlight:
                         if phrase and phrase in highlighted_content:
                             highlighted_content = highlighted_content.replace(
@@ -386,7 +386,7 @@ for comment in reversed(st.session_state.comments):
                 st.write(f"**{comment['author']}**")
                 st.markdown(highlighted_content, unsafe_allow_html=True)
 
-                # 발견된 키워드 표시 (분석된 경우에만)
+                # Display found keywords (only if analyzed)
                 if comment["id"] in st.session_state.keyword_matching_results:
                     result = st.session_state.keyword_matching_results[comment["id"]]
                     match_result = result.get("match_result", {})
@@ -394,14 +394,14 @@ for comment in reversed(st.session_state.comments):
                         analysis_result = match_result.get("analysis_result", {})
                         matched_keywords = analysis_result.get("matched_keywords", [])
 
-                        # 새로운 형식: 딕셔너리 배열에서 키워드 추출
+                        # New format: extract keywords from dictionary array
                         if matched_keywords and isinstance(matched_keywords[0], dict):
                             keywords = [
                                 item.get("keyword", "")
                                 for item in matched_keywords
                                 if item.get("keyword")
                             ]
-                        # 기존 형식: 문자열 배열
+                        # Old format: string array
                         else:
                             keywords = matched_keywords
 
@@ -415,7 +415,7 @@ for comment in reversed(st.session_state.comments):
                                         f'<span class="keyword-badge">{kw}</span>'
                                     )
                             st.markdown(
-                                f"**발견된 키워드:** {keywords_html}",
+                                f"**Found Keywords:** {keywords_html}",
                                 unsafe_allow_html=True,
                             )
 
@@ -427,11 +427,11 @@ for comment in reversed(st.session_state.comments):
                 st.caption(comment["timestamp"])
 
             with col4:
-                # 개별 키워드 분석 버튼
+                # Individual keyword analysis button
                 button_label = (
-                    "✅ 재분석"
+                    "✅ Re-analyze"
                     if comment["id"] in st.session_state.keyword_matching_results
-                    else "🔍 키워드 분석"
+                    else "🔍 Analyze Keywords"
                 )
                 if st.button(
                     button_label,
@@ -439,7 +439,7 @@ for comment in reversed(st.session_state.comments):
                     type="primary",
                     use_container_width=True,
                 ):
-                    with st.spinner("키워드 검색 중..."):
+                    with st.spinner("Searching keywords..."):
                         try:
                             match_result = search_keywords(comment["content"])
                             st.session_state.keyword_matching_results[comment["id"]] = {
@@ -449,31 +449,31 @@ for comment in reversed(st.session_state.comments):
                                 "review_text": comment["content"],
                                 "match_result": match_result,
                             }
-                            st.success("✅ 분석 완료!")
+                            st.success("✅ Analysis complete!")
                             st.rerun()
                         except Exception as e:
-                            st.error(f"키워드 검색 중 오류: {str(e)}")
+                            st.error(f"Error during keyword search: {str(e)}")
 
             st.divider()
 
 st.divider()
 
-# 새 리뷰 등록 섹션
-st.subheader("✍️ 새 리뷰 등록")
+# New review registration section
+st.subheader("✍️ Write New Review")
 
 with st.form("new_comment_form"):
     col1, col2 = st.columns([3, 1])
 
     with col1:
-        author_name = st.text_input("작성자", placeholder="이름을 입력하세요")
+        author_name = st.text_input("Author", placeholder="Enter your name")
         comment_content = st.text_area(
-            "리뷰 내용", placeholder="제품에 대한 리뷰를 작성해주세요", height=100
+            "Review Content", placeholder="Write your review about the product", height=100
         )
 
     with col2:
-        rating = st.selectbox("평점", [1, 2, 3, 4, 5], index=4)
+        rating = st.selectbox("Rating", [1, 2, 3, 4, 5], index=4)
 
-    if st.form_submit_button("리뷰 등록", type="primary"):
+    if st.form_submit_button("Submit Review", type="primary"):
         if author_name and comment_content:
             new_comment = {
                 "id": (
@@ -488,7 +488,7 @@ with st.form("new_comment_form"):
             }
 
             st.session_state.comments.append(new_comment)
-            st.success("리뷰가 등록되었습니다!")
+            st.success("Review has been submitted successfully!")
             st.rerun()
         else:
-            st.error("작성자와 리뷰 내용을 모두 입력해주세요.")
+            st.error("Please enter both author name and review content.")
