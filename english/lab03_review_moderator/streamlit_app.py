@@ -7,19 +7,19 @@ from PIL import Image
 
 sys.path.append(".")
 
-# 이미지 경로 설정
+# Image path configuration
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")
 
-# 검수 에이전트 import 시도
+# Attempt to import moderation agent
 try:
     from review_moderator.agent import moderate_review
 
     AGENT_AVAILABLE = True
 except ImportError as e:
-    print(f"Agent import 실패: {e}")
+    print(f"Agent import failed: {e}")
     AGENT_AVAILABLE = False
 
-st.set_page_config(page_title="Lab 03. 리뷰 검수 Agent", page_icon="🛍️", layout="wide")
+st.set_page_config(page_title="Lab 03. Review Moderation Agent", page_icon="🛍️", layout="wide")
 
 st.markdown(
     """
@@ -89,73 +89,73 @@ if "comments" not in st.session_state:
     st.session_state.comments = [
         {
             "id": 1,
-            "author": "김민수",
+            "author": "Kim Minsu",
             "rating": 5,
-            "content": "이 제품 정말 좋아요! 음질도 훌륭하고 배터리도 오래 갑니다.",
+            "content": "This product is really great! The sound quality is excellent and the battery lasts long.",
             "timestamp": "2024-01-15 14:30",
             "image": None,
         },
         {
             "id": 2,
-            "author": "이영희",
+            "author": "Lee Younghee",
             "rating": 1,
-            "content": "완전 쓰레기네요. 돈 아까워요.",
+            "content": "Total garbage. Waste of money.",
             "timestamp": "2024-01-14 10:20",
             "image": None,
         },
         {
             "id": 3,
-            "author": "박철수",
+            "author": "Park Cheolsu",
             "rating": 5,
-            "content": "별로예요. 기대했는데 실망이에요.",
+            "content": "Not great. I had high expectations but disappointed.",
             "timestamp": "2024-01-13 16:45",
             "image": None,
         },
         {
             "id": 4,
-            "author": "최지훈",
+            "author": "Choi Jihoon",
             "rating": 4,
-            "content": "이어폰 디자인이 깔끔하고 착용감도 편해요. 음질은 가격대비 괜찮은 것 같아요. 아침에 운동할 때 써봤는데 떨어지지도 않고 좋네요!",
+            "content": "The earphone design is clean and comfortable to wear. The sound quality is pretty decent for the price. I tried it during my morning workout and it didn't fall off, which is great!",
             "timestamp": "2024-01-12 09:15",
             "image_path": os.path.join(IMAGES_DIR, "earphone.png"),
         },
         {
             "id": 5,
-            "author": "정수연",
+            "author": "Jung Sooyeon",
             "rating": 3,
-            "content": "이어폰 만만세",
+            "content": "Earphone hurray",
             "timestamp": "2024-01-11 16:22",
             "image_path": os.path.join(IMAGES_DIR, "flower.webp"),
         },
     ]
 
-# 검수 결과 저장용 session state
+# Session state for storing moderation results
 if "comment_moderation_results" not in st.session_state:
     st.session_state.comment_moderation_results = {}
 
-# 메인 콘텐츠 영역)
-st.header("🏷️ Lab 03. 리뷰 검수 Agent")
-st.subheader("부적절 리뷰 검수 시스템 실습")
+# Main content area
+st.header("🏷️ Lab 03. Review Moderation Agent")
+st.subheader("Hands-on Inappropriate Review Moderation System")
 st.markdown("---")
 
 total_reviews = len(st.session_state.comments)
 total_rating = sum([comment["rating"] for comment in st.session_state.comments])
 average_rating = total_rating / total_reviews if total_reviews else 0
 
-st.subheader("📦 상품 정보")
+st.subheader("📦 Product Information")
 st.markdown(
     f"""
     <div class="product-rating-container">
         <div class="product-rating-grid">
             <div>
-                <p><strong>상품명:</strong> 프리미엄 무선 이어폰</p>
-                <p><strong>가격:</strong> 89,000원</p>
-                <p><strong>상품 설명:</strong></p>
-                <p>고품질 사운드와 긴 배터리 수명을 자랑하는 프리미엄 무선 이어폰입니다. 노이즈 캔슬링 기능과 편안한 착용감을 제공합니다.</p>
+                <p><strong>Product Name:</strong> Premium Wireless Earphones</p>
+                <p><strong>Price:</strong> $89.00</p>
+                <p><strong>Product Description:</strong></p>
+                <p>Premium wireless earphones featuring high-quality sound and long battery life. Provides noise cancellation functionality and comfortable fit.</p>
             </div>
             <div>
                 <div class="rating-card">
-                    <div class="metric-label"><strong>평균 평점</strong> (총 {total_reviews}개 리뷰)</div>
+                    <div class="metric-label"><strong>Average Rating</strong> ({total_reviews} total reviews)</div>
                     <div class="metric-value">{average_rating:.1f} / 5.0</div>
                 </div>
             </div>
@@ -165,7 +165,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.subheader("💬 댓글 목록")
+st.subheader("💬 Comments List")
 
 for comment in reversed(st.session_state.comments):
     with st.container():
@@ -175,17 +175,17 @@ for comment in reversed(st.session_state.comments):
             st.write(f"**{comment['author']}**")
             st.write(comment["content"])
 
-            # 이미지 표시 (image 또는 image_path)
+            # Display image (image or image_path)
             image_to_display = comment.get("image") or comment.get("image_path")
             if image_to_display:
-                st.write("📷 **첨부된 이미지:**")
+                st.write("📷 **Attached Image:**")
                 try:
                     st.image(image_to_display, width=150)
                 except Exception as e:
-                    st.error(f"이미지를 불러올 수 없습니다: {e}")
+                    st.error(f"Cannot load image: {e}")
 
         with col2:
-            # 통일된 스타일의 별점 표시
+            # Display star rating with unified style
             stars_html = ""
             for i in range(5):
                 if i < comment["rating"]:
@@ -205,23 +205,23 @@ for comment in reversed(st.session_state.comments):
 
         with col4:
             if st.button(
-                "🔍 검수하기",
+                "🔍 Moderate",
                 key=f"review_{comment['id']}",
                 type="primary",
                 use_container_width=True,
             ):
                 if not AGENT_AVAILABLE:
-                    st.warning("검수 에이전트를 사용할 수 없습니다.")
+                    st.warning("Moderation agent is not available.")
                     continue
 
-                with st.spinner("검수 중..."):
+                with st.spinner("Moderating..."):
                     try:
                         product_data = {
-                            "name": "프리미엄 무선 이어폰",
-                            "category": "전자기기",
+                            "name": "Premium Wireless Earphones",
+                            "category": "Electronics",
                         }
 
-                        # 이미지 로드 (PIL Image로 변환)
+                        # Load image (convert to PIL Image)
                         image = None
                         if comment.get("image"):
                             image = comment["image"]
@@ -254,37 +254,37 @@ for comment in reversed(st.session_state.comments):
                             "raw_response": result.get("raw_response", ""),
                         }
                     except Exception as e:
-                        st.error(f"검수 중 오류가 발생했습니다: {str(e)}")
+                        st.error(f"An error occurred during moderation: {str(e)}")
 
-        # 검수 결과가 있으면 펼치기/접기 메뉴 표시
+        # Display expandable menu if moderation result exists
         if comment["id"] in st.session_state.comment_moderation_results:
             moderation_result = st.session_state.comment_moderation_results[
                 comment["id"]
             ]
 
-            # 검수 결과 상태에 따른 아이콘
+            # Icon based on moderation result status
             status_icon = (
                 "✅" if moderation_result["overall_status"] == "PASS" else "❌"
             )
 
             with st.expander(
-                f"{status_icon} 검수 결과 상세보기 - {moderation_result['overall_status']}",
+                f"{status_icon} View Moderation Details - {moderation_result['overall_status']}",
                 expanded=False,
             ):
-                # 검수 시간
-                st.write(f"**검수 시간:** {moderation_result['timestamp']}")
+                # Moderation time
+                st.write(f"**Moderation Time:** {moderation_result['timestamp']}")
 
-                # 전체 상태
+                # Overall status
                 if moderation_result["overall_status"] == "PASS":
-                    st.success("✅ 전체 검수 통과")
+                    st.success("✅ Overall Moderation Passed")
                 else:
-                    st.error("❌ 전체 검수 실패")
+                    st.error("❌ Overall Moderation Failed")
 
-                # 세부 검수 결과
-                st.write("**세부 검수 결과:**")
+                # Detailed moderation results
+                st.write("**Detailed Moderation Results:**")
                 details = moderation_result["details"]
 
-                # 각 검수 항목별 결과
+                # Results for each moderation item
                 for check_name in [
                     "profanity_check",
                     "image_match",
@@ -299,9 +299,9 @@ for comment in reversed(st.session_state.comments):
                         )
 
                         check_display_name = {
-                            "profanity_check": "욕설/선정성 검사",
-                            "image_match": "이미지 매칭 검사",
-                            "rating_consistency": "별점 일치성 검사",
+                            "profanity_check": "Profanity/Explicit Content Check",
+                            "image_match": "Image Match Check",
+                            "rating_consistency": "Rating Consistency Check",
                         }.get(check_name, check_name)
 
                         with st.container():
@@ -309,25 +309,25 @@ for comment in reversed(st.session_state.comments):
                             with col_status:
                                 st.write(f"{status_emoji} **{check_display_name}**")
                             with col_detail:
-                                st.write(f"{result.get('reason', '이유 없음')}")
+                                st.write(f"{result.get('reason', 'No reason')}")
                                 if "confidence" in result:
-                                    st.caption(f"신뢰도: {result['confidence']:.2f}")
+                                    st.caption(f"Confidence: {result['confidence']:.2f}")
 
-                # 실패한 검수 항목
+                # Failed moderation items
                 if moderation_result["failed_checks"]:
-                    st.write("**실패한 검수 항목:**")
+                    st.write("**Failed Moderation Items:**")
                     for failed_check in moderation_result["failed_checks"]:
                         st.write(f"- {failed_check}")
 
-                # 요약 메시지
+                # Summary message
                 if "summary" in details:
-                    st.write("**요약:**")
+                    st.write("**Summary:**")
                     st.info(details["summary"])
 
-                # 원본 응답 (디버깅용)
-                with st.expander("원본 에이전트 응답 (디버깅용)", expanded=False):
+                # Original response (for debugging)
+                with st.expander("Original Agent Response (for debugging)", expanded=False):
                     st.code(
-                        moderation_result.get("raw_response", "원본 응답 없음"),
+                        moderation_result.get("raw_response", "No original response"),
                         language="text",
                     )
 
@@ -335,29 +335,29 @@ for comment in reversed(st.session_state.comments):
 
 st.markdown("---")
 
-st.subheader("✍️ 새 댓글 작성")
+st.subheader("✍️ Write New Comment")
 
 with st.form("comment_form"):
     col1, col2 = st.columns([3, 1])
 
     with col1:
-        author_name = st.text_input("작성자명", placeholder="이름을 입력하세요")
+        author_name = st.text_input("Author Name", placeholder="Enter your name")
         comment_content = st.text_area(
-            "댓글 내용", placeholder="상품에 대한 의견을 남겨주세요", height=100
+            "Comment Content", placeholder="Share your opinion about the product", height=100
         )
 
         uploaded_image = st.file_uploader(
-            "이미지 첨부 (선택사항)",
+            "Attach Image (optional)",
             type=["png", "jpg", "jpeg"],
             accept_multiple_files=False,
         )
 
     with col2:
         rating = st.selectbox(
-            "평점", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x}점"
+            "Rating", [5, 4, 3, 2, 1], format_func=lambda x: f"⭐ {x} points"
         )
 
-    submitted = st.form_submit_button("댓글 등록", type="primary")
+    submitted = st.form_submit_button("Submit Comment", type="primary")
 
     if submitted:
         if author_name and comment_content:
@@ -369,7 +369,7 @@ with st.form("comment_form"):
                     max_size = (800, 600)
                     image.thumbnail(max_size, Image.Resampling.LANCZOS)
                 except Exception as e:
-                    st.error(f"이미지 처리 중 오류가 발생했습니다: {e}")
+                    st.error(f"An error occurred during image processing: {e}")
                     st.stop()
 
             new_comment = {
@@ -381,19 +381,19 @@ with st.form("comment_form"):
                 "image": image,
             }
             st.session_state.comments.append(new_comment)
-            st.success("댓글이 등록되었습니다!")
+            st.success("Comment has been submitted successfully!")
 
-            # 자동 검수 수행 (AGENT_AVAILABLE인 경우)
+            # Perform automatic moderation (if AGENT_AVAILABLE)
             if AGENT_AVAILABLE:
-                with st.spinner("새 댓글 자동 검수 중..."):
+                with st.spinner("Auto-moderating new comment..."):
                     try:
-                        # 상품 정보 준비
+                        # Prepare product data
                         product_data = {
-                            "name": "프리미엄 무선 이어폰",
-                            "category": "전자기기",
+                            "name": "Premium Wireless Earphones",
+                            "category": "Electronics",
                         }
 
-                        # 에이전트로 검수 실행
+                        # Execute moderation with agent
                         result = moderate_review(
                             review_content=comment_content,
                             rating=rating,
@@ -407,7 +407,7 @@ with st.form("comment_form"):
                         else:
                             moderation_result_dict = moderation_result
 
-                        # 검수 결과를 comment별로 저장
+                        # Save moderation result per comment
                         st.session_state.comment_moderation_results[
                             new_comment["id"]
                         ] = {
@@ -421,10 +421,10 @@ with st.form("comment_form"):
                         }
 
                     except Exception as e:
-                        st.error(f"자동 검수 중 오류가 발생했습니다: {str(e)}")
+                        st.error(f"An error occurred during automatic moderation: {str(e)}")
 
             st.rerun()
         else:
-            st.error("작성자명과 댓글 내용을 모두 입력해주세요.")
+            st.error("Please enter both author name and comment content.")
 
 st.markdown("---")
