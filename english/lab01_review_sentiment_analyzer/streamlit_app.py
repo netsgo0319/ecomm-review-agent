@@ -227,7 +227,7 @@ for comment in reversed(st.session_state.comments):
             st.write(comment["content"])
 
         with col2:
-            # 별점 표시
+            # Display star rating
             st.markdown(generate_stars_html(comment["rating"]), unsafe_allow_html=True)
             st.caption(f"{comment['rating']}/5")
 
@@ -328,7 +328,7 @@ with st.form("comment_form"):
     col1, col2 = st.columns([3, 1])
 
     with col1:
-        author_name = st.text_input("Author Name", placeholder="Enter your name")
+        author_name = st.text_input("User Name", placeholder="Enter your name")
         comment_content = st.text_area(
             "Comment Content", placeholder="Share your opinion about the product", height=100
         )
