@@ -23,41 +23,41 @@ logging.basicConfig(
 )
 
 ORCHESTRATOR_PROMPT = """
-당신은 리뷰 분석 워크플로우를 관리하는 오케스트레이터입니다.
-사용자가 입력하는 리뷰 데이터를 기반으로 다음 agent와 순서를 참고하여 리뷰를 검수하고 분석한 후 자동답글을 생성해주세요.
+You are an orchestrator that manages review analysis workflows.
+Based on the review data input by the user, please moderate and analyze the review, then generate an automatic response by following the agents and sequence below.
 
-<분석용에이전트들>
-활용해야 하는 리뷰 분석 Agent (순서대로 실행):
-1. 리뷰 검수 (이미지와 제품 정보 연관 검사, 별점과 코멘트의 일관성 검사, 욕설/선정성 검사를 포함함)
-2. 키워드에 맞는 문장 분석
-3. 감정 분석
-4. 자동 응답 생성 (분석된 감정에 맞게)
-</분석용에이전트들>
+<Analysis Agents>
+Review analysis agents to utilize (execute in order):
+1. Review moderation (includes image-product relevance check, rating-comment consistency check, profanity/explicit content check)
+2. Keyword-matching sentence analysis
+3. Sentiment analysis
+4. Auto-response generation (according to analyzed sentiment)
+</Analysis Agents>
 
-<작업순서>
-1. 리뷰 검수 후 욕설/선정성 검수에서 탈락할 경우 이후 단계를 진행하지 않고 종료해주세요. 종료 시 부적격 사유를 응답해주세요. (이미지 검수나 별점코멘트 일관성 검수 등 다른 리뷰 검수 항목은 실패하더라도 다음 단계 진행 가능) 
-2. 리뷰 검수에서 정상적으로 통과할 경우, 감정 분석과 키워드 추출을 순서대로 진행하고 리뷰를 분석해주세요.
-3. 마지막으로 자동응답을 생성해주세요
-</작업순서>
+<Work Sequence>
+1. After review moderation, if it fails the profanity/explicit content check, do not proceed with subsequent steps and terminate. When terminating, respond with the reason for disqualification. (Other review moderation items like image check or rating-comment consistency check can proceed to next steps even if they fail)
+2. If the review passes moderation normally, proceed with sentiment analysis and keyword extraction in order to analyze the review.
+3. Finally, generate an auto-response
+</Work Sequence>
 
 """
 
 
 class KeywordHighlight(BaseModel):
-    keyword: str = Field(description="기준 키워드")
-    match_type: str = Field(description="매칭 타입: exact, partial, semantic")
-    original_phrase: str = Field(description="리뷰에서 발견된 원본 구문")
+    keyword: str = Field(description="Reference keyword")
+    match_type: str = Field(description="Matching type: exact, partial, semantic")
+    original_phrase: str = Field(description="Original phrase found in review")
 
 
 class ReviewAnalysis(BaseModel):
     """Complete review analysis."""
 
-    moderation_result: Dict[str, Any] = Field(description="리뷰 검수 결과")
+    moderation_result: Dict[str, Any] = Field(description="Review moderation result")
     keyword_highlighted_list: List[KeywordHighlight] = Field(
-        description="키워드 분석에서 키워드에 맞는 문장들"
+        description="Sentences matching keywords from keyword analysis"
     )
-    sentiment: str = Field(description="감정 분석 결과")
-    auto_response: str = Field(description="자동 응답 생성 결과")
+    sentiment: str = Field(description="Sentiment analysis result")
+    auto_response: str = Field(description="Auto-response generation result")
 
 
 def comprehensive_analyzer(
@@ -66,21 +66,22 @@ def comprehensive_analyzer(
     image: Optional[PILImage] = None,
 ) -> Dict[str, Any]:
     """
-    리뷰에 대한 자동 응답을 생성하는 메인 함수
+    Main function to generate comprehensive analysis for a review
 
     Args:
-        review_data Dict[str, Any]: 분석할 리뷰 데이터
-        image (Optional[PILImage]): 업로드된 이미지 (PIL Image 객체)
+        product_data Dict[str, Any]: Product data
+        review_data Dict[str, Any]: Review data to analyze
+        image (Optional[PILImage]): Uploaded image (PIL Image object)
 
     Returns:
-        Dict[str, Any]: 종합 분석 결과
+        Dict[str, Any]: Comprehensive analysis result
     """
 
     image_path = None
     if image:
         image_path = save_image(image)
 
-    # 각 요청마다 새로운 Agent 생성
+    # Create new Agent for each request
     orchestrator_agent = Agent(
         model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         tools=[
@@ -92,27 +93,29 @@ def comprehensive_analyzer(
         system_prompt=ORCHESTRATOR_PROMPT,
     )
 
-    # 리뷰 종합 분석 결과 응답
+    # Respond with comprehensive review analysis result
     orchestrator_agent(
         f"""
     <product_data>{product_data}</product_data>
     <review_data>{review_data}</review_data>
-    <image_path>{image_path if image_path else '없음'}</image_path>
+    <image_path>{image_path if image_path else 'None'}</image_path>
     """
     )
 
     result = orchestrator_agent.structured_output(
-        ReviewAnalysis, "리뷰데이터에 대한 분석 결과를 구조화된 형태로 추출하시오"
+        ReviewAnalysis, "Extract analysis results for review data in structured form"
     )
 
-    # Pydantic 모델을 dict로 변환
+    # Convert Pydantic model to dict
     if hasattr(result, "model_dump"):
         result_dict = result.model_dump()
     elif hasattr(result, "dict"):
         result_dict = result.dict()
     else:
         result_dict = result
-
+    print("*"*10)
+    print(result_dict)
+    print("*"*10)
     return result_dict
 
 
@@ -120,14 +123,14 @@ def save_image(
     image: PILImage, images_folder: str = "lab05_orchestrator/images"
 ) -> str:
     """
-    이미지를 images 폴더에 저장하고 경로를 반환합니다.
+    Save image to images folder and return the path.
 
     Args:
-        image (PILImage): 저장할 PIL Image 객체
-        images_folder (str): 저장할 폴더 경로 (기본값: "images")
+        image (PILImage): PIL Image object to save
+        images_folder (str): Folder path to save to (default: "images")
 
     Returns:
-        str: 저장된 이미지의 경로
+        str: Path of the saved image
     """
     os.makedirs(images_folder, exist_ok=True)
 

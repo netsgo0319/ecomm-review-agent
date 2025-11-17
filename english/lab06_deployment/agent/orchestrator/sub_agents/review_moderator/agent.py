@@ -19,84 +19,83 @@ logging.basicConfig(
 )
 
 
-# 통합 리뷰 검수 Agent 시스템 프롬프트
+# Unified review moderation Agent system prompt
 UNIFIED_MODERATOR_PROMPT = """
-    당신은 이커머스 플랫폼의 리뷰 검수 전문가입니다.
+    You are a review moderation expert for an e-commerce platform.
 
-    <주요역할>
-    다음의 세가지 카테고리의 검수를 진행하세요.
-    - 리뷰 텍스트의 선정적/욕설 표현을 검사해주세요 -> check_profanity
-    - 별점과 리뷰 내용의 일치성을 분석해주세요 -> check_rating_consistency
-    - 업로드된 이미지와 제품의 관련성을 검증해주세요 (이미지가 있는 경우에만.) -> check_image_product_match
-    </주요역할>
+    <Main Roles>
+    Conduct moderation in the following three categories:
+    - Check for profanity/inappropriate expressions in review text -> check_profanity
+    - Analyze consistency between rating and review content -> check_rating_consistency
+    - Verify relevance of uploaded image to product (only if image exists) -> check_image_product_match
+    </Main Roles>
 
-    <주의사항>
-    - 한국어 감정 표현의 미묘한 차이 인식
-    - 전체 맥락을 고려한 종합적 판단
-    </주의사항>
+    <Important Notes>
+    - Recognize subtle differences in emotional expressions
+    - Make comprehensive judgments considering the overall context
+    </Important Notes>
 
-    <overall_status 결정 규칙>
-    - profanity_check가 FAIL이면 overall_status는 반드시 "FAIL"로 설정
-    - profanity_check가 PASS라면, rating_consistency나 image_match가 FAIL이어도 overall_status는 "PASS"로 설정
-    - 즉, 욕설/선정성 검수만 전체 검수의 통과/실패를 결정합니다
-    </overall_status 결정 규칙>
+    <overall_status Decision Rules>
+    - If profanity_check is FAIL, overall_status must be set to "FAIL"
+    - If profanity_check is PASS, overall_status is set to "PASS" even if rating_consistency or image_match is FAIL
+    - In other words, only the profanity/explicit content check determines the pass/fail of the overall moderation
+    </overall_status Decision Rules>
 
-    <출력형식>
-    모든 검수를 수행한 후, 반드시 다음 JSON 스키마로 응답해주세요. 다른 설명이나 백틱(```json) 등은 절대 포함하지 마세요.:
+    <Output Format>
+    After performing all moderation checks, respond with the following JSON schema. Do not include any other explanations or backticks (```json):
 
     {
         "profanity_check": {
             "status": "PASS|FAIL|SKIP",
-            "reason": "구체적인 판단 근거 (필수)",
+            "reason": "Specific rationale (required)",
             "confidence": 0.0-1.0
         },
         "rating_consistency": {
             "status": "PASS|FAIL|SKIP",
-            "reason": "구체적인 판단 근거 (필수)",
+            "reason": "Specific rationale (required)",
             "confidence": 0.0-1.0
         },
         "image_match": {
             "status": "PASS|FAIL|SKIP",
-            "reason": "구체적인 판단 근거 (필수)",
+            "reason": "Specific rationale (required)",
             "confidence": 0.0-1.0
         },
         "overall_status": "PASS|FAIL",
-        "failed_checks": ["실패한 검수 항목 리스트"]
+        "failed_checks": ["List of failed moderation items"]
     }
 
-    </출력형식>
+    </Output Format>
 """
 
 USER_PROMPT_TEMPLATE = Template(
     """
-    다음 리뷰를 종합적으로 검수해주세요:
+    Please conduct a comprehensive moderation of the following review:
 
-    리뷰 내용: $review_content
-    별점: $rating 점 (1-5점 척도)
-    제품: $product
-    카테고리: $category
-    이미지: $has_image ($image_path)
+    Review Content: $review_content
+    Rating: $rating points (1-5 scale)
+    Product: $product
+    Category: $category
+    Image: $has_image ($image_path)
     """
 )
 
 
 class CheckResult(BaseModel):
-    """개별 검사 결과"""
+    """Individual check result"""
 
-    status: Literal["PASS", "FAIL", "SKIP"] = Field(description="검사 상태")
-    reason: str = Field(description="구체적인 판단 근거 (필수)")
-    confidence: float = Field(ge=0.0, le=1.0, description="신뢰도 (0.0-1.0)")
+    status: Literal["PASS", "FAIL", "SKIP"] = Field(description="Check status")
+    reason: str = Field(description="Specific rationale (required)")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence (0.0-1.0)")
 
 
 class ReviewModerationResult(BaseModel):
-    """리뷰 모더레이션 분석 결과"""
+    """Review moderation analysis result"""
 
-    profanity_check: CheckResult = Field(description="욕설/비속어 검사 결과")
-    rating_consistency: CheckResult = Field(description="평점-내용 일치성 검사 결과")
-    image_match: CheckResult = Field(description="이미지-내용 일치성 검사 결과")
-    overall_status: Literal["PASS", "FAIL"] = Field(description="전체 검수 통과 여부")
-    failed_checks: List[str] = Field(description="실패한 검사 항목 리스트")
-
+    profanity_check: CheckResult = Field(description="Profanity/obscenity check result")
+    rating_consistency: CheckResult = Field(description="Rating-content consistency check result")
+    image_match: CheckResult = Field(description="Image-content match check result")
+    overall_status: Literal["PASS", "FAIL"] = Field(description="Overall moderation pass status")
+    failed_checks: List[str] = Field(description="List of failed check items")
 
 @tool
 def moderate_review(
@@ -106,19 +105,19 @@ def moderate_review(
     image_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    리뷰를 종합적으로 검수하는 메인 함수
+    Main function to comprehensively moderate a review
 
     Args:
-        review_content (str): 리뷰 내용
-        rating (int): 별점 (1-5)
-        product_data (Dict[str, Any]): name(제품명), category(카테고리) 등 제품 정보
-        image_path (Optional[str]): 업로드된 이미지 경로
+        review_content (str): Review content
+        rating (int): Rating (1-5)
+        product_data (Dict[str, Any]): Product information including name and category
+        image (Optional[PILImage]): Uploaded image (PIL Image object)
 
     Returns:
-        Dict[str, Any]: 검수 결과
+        Dict[str, Any]: Moderation result
     """
 
-    # 통합 검수 Agent 생성
+    # Create unified moderation Agent
     unified_moderator = Agent(
         model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         tools=[check_profanity, check_rating_consistency, check_image_product_match],
@@ -126,26 +125,54 @@ def moderate_review(
         system_prompt=UNIFIED_MODERATOR_PROMPT,
     )
 
-    # user prompt 생성
+    # Generate user prompt
     user_prompt = USER_PROMPT_TEMPLATE.substitute(
         review_content=review_content,
         rating=rating,
         product=product_data.get("name", "Unknown"),
-        category=product_data.get("category", "알수없음"),
-        has_image="있음" if image_path else "없음",
-        image_path=image_path if image_path else "없음",
+        category=product_data.get("category", "Unknown"),
+        has_image="Yes" if image_path else "No",
+        image_path=image_path if image_path else "None",
     )
 
-    # 통합 검수 Agent 실행
+    # Execute unified moderation Agent
     unified_response = unified_moderator(user_prompt)
 
     # Structured Output
     moderated_result = unified_moderator.structured_output(
-        ReviewModerationResult, "모델의 종합적인 리뷰 검수 결과를 구조화합니다."
+        ReviewModerationResult, "Structure the model's comprehensive review moderation result."
     )
+
 
     return {
         "success": True,
         "moderation_result": moderated_result,
         "raw_response": str(unified_response),
     }
+
+
+def save_image(
+    image: PILImage, images_folder: str = "lab03_review_moderator/images"
+) -> str:
+    """
+    Save image to images folder and return the path.
+
+    Args:
+        image (PILImage): PIL Image object to save
+        images_folder (str): Folder path to save to (default: "images")
+
+    Returns:
+        str: Path of the saved image
+    """
+    os.makedirs(images_folder, exist_ok=True)
+
+    image_format = image.format if image.format else "PNG"
+    extension = image_format.lower()
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"review_image_{timestamp}.{extension}"
+    filepath = os.path.join(images_folder, filename)
+
+    image.save(filepath, format=image_format)
+
+    return filepath
