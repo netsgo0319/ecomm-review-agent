@@ -144,15 +144,7 @@ if "comments" not in st.session_state:
             "content": "The product is defective and I want a refund. How do I do that? I can't even reach customer service and it's frustrating.",
             "timestamp": "2024-01-13 16:45",
             "images": [],
-        },
-        {
-            "id": 4,
-            "author": "Choi Jieun",
-            "rating": 4,
-            "content": "Overall satisfied, but the color is a bit different from the photo. Still, the quality is good!",
-            "timestamp": "2024-01-12 11:15",
-            "images": [],
-        },
+        }
     ]
 
 # Session state for storing auto-response results
