@@ -116,7 +116,7 @@ def moderate_review(
 
     # Create unified moderation Agent
     unified_moderator = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-sonnet-4-6",
         tools=[check_profanity, check_rating_consistency, check_image_product_match],
         system_prompt=UNIFIED_MODERATOR_PROMPT,
     )

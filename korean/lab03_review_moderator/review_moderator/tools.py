@@ -93,7 +93,7 @@ def check_profanity(content: str) -> Any:
         Any: 검사 결과
     """
     profanity_agent = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         system_prompt=PROFANITY_PROMPT,
     )
     return profanity_agent(
@@ -121,7 +121,7 @@ def check_image_product_match(image_path: str, product_data: Dict) -> Any:
                 "confidence": 1.0,
             }
         image_match_agent = Agent(
-            model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+            model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
             system_prompt=IMAGE_MATCH_PROMPT,
             tools=[image_reader],
         )
@@ -146,7 +146,7 @@ def check_rating_consistency(rating: int, content: str) -> Any:
         Dict[str, Any]: 일치성 검사 결과
     """
     rating_consistency_agent = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         system_prompt=RATING_CONSISTENCY_PROMPT,
     )
     return rating_consistency_agent(

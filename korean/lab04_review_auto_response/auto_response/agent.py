@@ -83,6 +83,7 @@ def generate_auto_response(review: str) -> Dict[str, Any]:
     # 각 요청마다 새로운 Agent 생성
     auto_response_agent = Agent(
         tools=[retrieve],
+        model="us.anthropic.claude-sonnet-4-6",
         system_prompt=RESPONSE_SYSTEM_PROMPT
         + f"""
         SELLER_ANSWER_PROMPT: {SELLER_ANSWER_PROMPT}

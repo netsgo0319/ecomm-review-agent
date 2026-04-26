@@ -83,7 +83,7 @@ class KeywordAnalysisResult(BaseModel):
 def search_keywords(review_text: str) -> dict:
     # Keyword matching Agent
     keyword_agent = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-sonnet-4-6",
         tools=[file_read],
         system_prompt=SYSTEM_PROMPT,
     )

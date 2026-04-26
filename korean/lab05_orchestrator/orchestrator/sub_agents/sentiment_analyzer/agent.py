@@ -59,7 +59,7 @@ def analyze_sentiment(review_content: str) -> dict:
         dict: 감정 분석 결과
     """
     sentiment_agent = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-sonnet-4-6",
         system_prompt=SYSTEM_PROMPT,
         callback_handler=None,
     )

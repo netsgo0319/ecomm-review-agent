@@ -83,7 +83,7 @@ def comprehensive_analyzer(
 
     # Create new Agent for each request
     orchestrator_agent = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         tools=[
             moderate_review,
             search_keywords,
