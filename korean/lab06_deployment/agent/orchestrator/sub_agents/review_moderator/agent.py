@@ -120,7 +120,7 @@ def moderate_review(
 
     # 통합 검수 Agent 생성
     unified_moderator = Agent(
-        model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         tools=[check_profanity, check_rating_consistency, check_image_product_match],
         callback_handler=None,
         system_prompt=UNIFIED_MODERATOR_PROMPT,

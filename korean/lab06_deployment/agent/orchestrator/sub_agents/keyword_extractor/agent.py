@@ -96,7 +96,7 @@ def search_keywords(review_text: str) -> dict:
 
     # 키워드 매칭 Agent
     keyword_agent = Agent(
-        model="us.anthropic.claude-3-sonnet-20240229-v1:0",
+        model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         tools=[file_read],
         callback_handler=None,
         system_prompt=SYSTEM_PROMPT,
